@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Photo Gallery – CSP{% endblock %}
+
+{% block extra_head %}
+<style>
+  .masonry { columns: 2; gap: 12px; }
+  @media(min-width:640px) { .masonry { columns: 3; } }
+  @media(min-width:1024px) { .masonry { columns: 4; } }
+  @media(min-width:1280px) { .masonry { columns: 5; } }
+  .masonry-item { break-inside: avoid; margin-bottom: 12px; }
+  .gallery-img { transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), filter 0.3s ease; }
+  .gallery-item:hover .gallery-img { transform: scale(1.03); filter: brightness(1.06); }
+  .gallery-overlay { background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 60%); }
+  #lightbox-overlay { backdrop-filter: blur(20px); }
+  .filter-btn { transition: all 0.2s ease; background:#FFFFFF; border:1px solid rgba(30,84,104,0.16); color:#6E8A93; }
+  .filter-btn.active { background: rgba(196,23,23,0.10) !important; border-color: rgba(196,23,23,0.32) !important; color: #C41717 !important; }
+  .gallery-search { background:#FFFFFF; border:1px solid rgba(30,84,104,0.18); color:#1E5468; }
+  .gallery-search::placeholder { color:#A4B9BD; }
+  .gallery-search:focus { outline:none; border-color:rgba(196,23,23,0.35); box-shadow:0 0 0 3px rgba(196,23,23,0.08); }
+  .gallery-select { background:#FFFFFF; border:1px solid rgba(30,84,104,0.18); color:#1E5468; appearance:none; }
+  .gallery-select:focus { outline:none; border-color:rgba(196,23,23,0.35); }
+  .view-btn { background:#FFFFFF; border:1px solid rgba(30,84,104,0.16); color:#6E8A93; transition:all 0.2s; }
+  .view-btn.active { background:rgba(196,23,23,0.10); border-color:rgba(196,23,23,0.32); color:#C41717; }
+  .photo-appear { animation: photoIn 0.4s ease forwards; opacity: 0; }
+  @keyframes photoIn { to { opacity:1; transform:scale(1); } from { opacity:0; transform:scale(0.95); } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pt-20 pb-16 min-h-screen" x-data="galleryApp()">
+
+  <!-- Header -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+      <div>
+        <div class="text-xs uppercase tracking-widest font-semibold mb-2" style="color:#C41717;font-family:'Space Grotesk',sans-serif;">Visual Archive</div>
+        <h1 class="text-4xl font-bold" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Photo Gallery</h1>
+        <p class="mt-2 text-sm" style="color:#6E8A93;">
+          <span x-text="photos.length"></span> photos from field visits and awareness sessions
+        </p>
+      </div>
+      <div class="flex gap-2">
+        <button @click="viewMode='masonry'"
+                :class="viewMode==='masonry' ? 'view-btn active' : 'view-btn'"
+                class="p-2.5 rounded-xl">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>
+        </button>
+        <button @click="viewMode='grid'"
+                :class="viewMode==='grid' ? 'view-btn active' : 'view-btn'"
+                class="p-2.5 rounded-xl">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="5" rx="1"/><rect x="12" y="3" width="9" height="5" rx="1"/><rect x="3" y="10" width="9" height="5" rx="1"/><rect x="14" y="10" width="7" height="5" rx="1"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter Row -->
+    <div class="flex flex-wrap gap-2 mb-4">
+      <!-- Search -->
+      <input type="text" x-model.debounce.400ms="search" placeholder="Search photos…"
+             @input="loadPhotos()"
+             class="gallery-search rounded-xl px-4 py-2.5 text-sm w-64">
+      <!-- Village filter -->
+      <div class="flex gap-1.5 flex-wrap">
+        <button @click="setVillage('all')"
+                :class="villageFilter==='all' ? 'active' : ''"
+                class="filter-btn px-3 py-2 rounded-xl text-xs">
+          All
+        </button>
+        {% for v in villages %}
+        <button @click="setVillage('{{ v.slug }}')"
+                :class="villageFilter==='{{ v.slug }}' ? 'active' : ''"
+                class="filter-btn px-3 py-2 rounded-xl text-xs">
+          {{ v.name }}
+        </button>
+        {% endfor %}
+      </div>
+      <!-- Category filter -->
+      <select x-model="categoryFilter" @change="loadPhotos()"
+              class="gallery-select rounded-xl px-3 py-2.5 text-sm">
+        <option value="all">All Categories</option>
+        {% for val, label in categories %}
+        <option value="{{ val }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <!-- Gallery -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <!-- Loading -->
+    <div x-show="loading" class="flex justify-center py-20">
+      <div class="w-8 h-8 border-2 rounded-full animate-spin" style="border-color:rgba(196,23,23,0.18);border-top-color:#C41717;"></div>
+    </div>
+
+    <!-- Masonry -->
+    <div x-show="!loading && viewMode==='masonry'" class="masonry">
+      <template x-for="(photo, idx) in photos" :key="photo.id">
+        <div class="masonry-item gallery-item group relative cursor-pointer rounded-xl overflow-hidden photo-appear"
+             :style="`animation-delay: ${idx * 30}ms`"
+             @click="openLightbox(idx)">
+          <img :src="photo.thumb" :alt="photo.caption"
+               class="gallery-img w-full block rounded-xl"
+               loading="lazy">
+          <div class="gallery-overlay absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
+            <div class="absolute bottom-0 left-0 right-0 p-3">
+              <p class="text-white text-xs font-medium line-clamp-2" x-text="photo.caption"></p>
+              <p class="text-white/60 text-[10px] mt-1" x-text="photo.village"></p>
+            </div>
+          </div>
+          <div x-show="photo.is_featured"
+               class="absolute top-2 right-2 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center text-[10px]">⭐</div>
+        </div>
+      </template>
+    </div>
+
+    <!-- Grid view -->
+    <div x-show="!loading && viewMode==='grid'" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      <template x-for="(photo, idx) in photos" :key="photo.id">
+        <div class="gallery-item group relative aspect-[4/3] overflow-hidden rounded-xl cursor-pointer photo-appear"
+             :style="`animation-delay: ${idx * 30}ms`"
+             @click="openLightbox(idx)">
+          <img :src="photo.thumb" :alt="photo.caption"
+               class="gallery-img w-full h-full object-cover"
+               loading="lazy">
+          <div class="gallery-overlay absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
+            <div class="absolute bottom-0 left-0 right-0 p-3">
+              <p class="text-white text-xs font-medium line-clamp-2" x-text="photo.caption"></p>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- Empty -->
+    <div x-show="!loading && photos.length===0" class="py-20 text-center" style="color:#6E8A93;">
+      No photos match your filters.
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div x-show="lightboxOpen"
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       @click.self="closeLightbox()"
+       @keydown.escape.window="closeLightbox()"
+       @keydown.arrow-left.window="prevPhoto()"
+       @keydown.arrow-right.window="nextPhoto()"
+       id="lightbox-overlay"
+       class="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
+    <!-- Close -->
+    <button @click="closeLightbox()" class="absolute top-4 right-4 text-white/60 hover:text-white text-xl w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all z-10">✕</button>
+    <!-- Prev -->
+    <button @click="prevPhoto()" class="absolute left-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all z-10">‹</button>
+    <!-- Next -->
+    <button @click="nextPhoto()" class="absolute right-16 top-1/2 -translate-y-1/2 text-white/60 hover:text-white w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all z-10">›</button>
+    <!-- Image -->
+    <div class="flex flex-col items-center max-w-5xl w-full">
+      <img :src="currentPhoto?.src" :alt="currentPhoto?.caption"
+           class="max-h-[80vh] max-w-full object-contain rounded-xl shadow-2xl">
+      <div class="mt-4 text-center">
+        <p class="text-white font-medium" x-text="currentPhoto?.caption"></p>
+        <p class="text-slate-400 text-sm mt-1">
+          <span x-text="currentPhoto?.village"></span>
+          <span x-show="currentPhoto?.date"> · <span x-text="currentPhoto?.date"></span></span>
+        </p>
+        <p class="text-slate-600 text-xs mt-1">
+          <span x-text="lightboxIdx + 1"></span> / <span x-text="photos.length"></span>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function galleryApp() {
+  return {
+    photos: [], loading: true, viewMode: 'masonry',
+    villageFilter: 'all', categoryFilter: 'all', search: '',
+    lightboxOpen: false, lightboxIdx: 0,
+
+    get currentPhoto() { return this.photos[this.lightboxIdx] || null; },
+
+    init() { this.loadPhotos(); },
+
+    setVillage(slug) { this.villageFilter = slug; this.loadPhotos(); },
+
+    loadPhotos() {
+      this.loading = true;
+      const params = new URLSearchParams();
+      if (this.villageFilter !== 'all') params.set('village', this.villageFilter);
+      if (this.categoryFilter !== 'all') params.set('category', this.categoryFilter);
+      if (this.search) params.set('search', this.search);
+      fetch(`{% url 'gallery:data' %}?${params}`)
+        .then(r => r.json())
+        .then(d => { this.photos = d.photos; this.loading = false; });
+    },
+
+    openLightbox(idx) {
+      this.lightboxIdx = idx;
+      this.lightboxOpen = true;
+      document.body.style.overflow = 'hidden';
+    },
+    closeLightbox() {
+      this.lightboxOpen = false;
+      document.body.style.overflow = '';
+    },
+    prevPhoto() { this.lightboxIdx = (this.lightboxIdx - 1 + this.photos.length) % this.photos.length; },
+    nextPhoto() { this.lightboxIdx = (this.lightboxIdx + 1) % this.photos.length; },
+  };
+}
+</script>
+{% endblock %}

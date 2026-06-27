@@ -1,0 +1,204 @@
+﻿{% extends "base.html" %}
+{% load static core_tags %}
+
+{% block title %}About the Project - CSP{% endblock %}
+
+{% block extra_head %}
+<style>
+.about-section-bg   { background: #FFF6F6; }
+.about-card         { background: #FFFFFF; border: 1px solid rgba(219,26,26,0.10); border-radius: 20px; }
+.about-card:hover   { border-color: rgba(219,26,26,0.20); }
+.obj-dot            { width: 28px; height: 28px; border-radius: 10px; flex-shrink: 0;
+                      background: rgba(219,26,26,0.14); border: 1px solid rgba(219,26,26,0.24);
+                      display: flex; align-items: center; justify-content: center; }
+.timeline-line      { position: absolute; left: 13px; top: 28px; bottom: 0; width: 2px;
+                      background: linear-gradient(to bottom, rgba(219,26,26,0.32), transparent); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pt-20 pb-20 min-h-screen" style="background: #FFF6F6;">
+  <div class="max-w-4xl mx-auto px-6 py-12 space-y-16">
+
+    <!-- Header -->
+    <div class="text-center scroll-reveal">
+      <div class="text-xs uppercase tracking-widest font-semibold mb-3" style="color: #C41717;">Community Service Project - {{ academic_year }}</div>
+      <h1 class="text-4xl sm:text-5xl font-bold mb-5" style="color: #1E5468;">About the Project</h1>
+      <p class="text-lg max-w-2xl mx-auto leading-relaxed" style="color: #6E8A93;">
+        A student-led initiative to understand internet usage and promote cyber safety across
+        four rural villages of Vizianagaram, Andhra Pradesh.
+      </p>
+      <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+        {% for village in villages %}
+        <a href="{{ village.get_absolute_url }}"
+           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+           style="background: {{ village.color_accent }}18; border: 1px solid {{ village.color_accent }}35; color: {{ village.color_accent }};">
+          <span class="w-1.5 h-1.5 rounded-full" style="background: {{ village.color_accent }};"></span>
+          {{ village.name }}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Why This Project -->
+    <div class="about-card p-8 scroll-reveal">
+      <div class="text-xs uppercase tracking-widest font-semibold mb-4" style="color: #C41717;">Why We Started This</div>
+      <p class="leading-relaxed mb-4" style="color: #476D79; font-size: 1.05rem; line-height: 1.8;">
+        Rural communities in India are experiencing a rapid rise in smartphone usage -
+        but cyber safety literacy has not kept pace. Residents of villages like Maharajupeta,
+        Rajapulova, Jonnada, and Akulapeta are increasingly targeted by OTP frauds, fake prize calls,
+        phishing messages, and account-hacking attempts.
+      </p>
+      <p class="leading-relaxed" style="color: #6E8A93;">
+        Many victims do not know where to report or how to recover. This project was started to
+        measure the scale of this problem, raise awareness at the ground level, and document
+        what works and what doesn't - so future batches can build on this foundation.
+      </p>
+    </div>
+
+    <!-- Objectives -->
+    <div class="scroll-reveal">
+      <div class="text-xs uppercase tracking-widest font-semibold mb-6" style="color: #C41717;">What We Set Out to Do</div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {% for obj in "Understand how rural residents use the internet|Measure how aware they are of cyber threats|Identify who is most at risk and why|Run awareness sessions in each village|Document what works for future CSP batches|Create a digital record of the project"|split:"|" %}
+        <div class="flex items-start gap-3 rounded-xl p-4" style="background: rgba(44,104,123,0.04); border: 1px solid rgba(44,104,123,0.08);">
+          <div class="obj-dot mt-0.5">
+            <span class="text-xs font-bold" style="color: #C41717;">{{ forloop.counter }}</span>
+          </div>
+          <span class="text-sm leading-relaxed" style="color: #476D79;">{{ obj }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- How We Did It (human, not technical) -->
+    <div class="scroll-reveal">
+      <div class="text-xs uppercase tracking-widest font-semibold mb-6" style="color: #8CC7C4;">How We Worked</div>
+      <div class="space-y-4">
+        <div class="flex items-start gap-4 p-5 rounded-xl" style="background: rgba(219,26,26,0.05); border: 1px solid rgba(219,26,26,0.10);">
+          <div class="text-2xl font-bold" style="color:#C41717;">01</div>
+          <div>
+            <div class="font-semibold mb-1" style="color: #1E5468;">We went to the villages</div>
+            <div class="text-sm leading-relaxed" style="color: #6E8A93;">Not just sent a Google Form - we walked street by street, knocked on doors, sat with families, explained the survey in Telugu, and listened to their stories.</div>
+          </div>
+        </div>
+        <div class="flex items-start gap-4 p-5 rounded-xl" style="background: rgba(44,104,123,0.05); border: 1px solid rgba(44,104,123,0.10);">
+          <div class="text-2xl font-bold" style="color:#C41717;">02</div>
+          <div>
+            <div class="font-semibold mb-1" style="color: #1E5468;">We asked the right questions</div>
+            <div class="text-sm leading-relaxed" style="color: #6E8A93;">The survey covers internet usage, types of devices, connection quality, awareness about OTP fraud, and whether they had personally faced any online scam.</div>
+          </div>
+        </div>
+        <div class="flex items-start gap-4 p-5 rounded-xl" style="background: rgba(140,199,196,0.05); border: 1px solid rgba(140,199,196,0.10);">
+          <div class="text-2xl font-bold" style="color:#C41717;">03</div>
+          <div>
+            <div class="font-semibold mb-1" style="color: #1E5468;">We held awareness sessions</div>
+            <div class="text-sm leading-relaxed" style="color: #6E8A93;">At each village, after the survey, we sat with residents and explained common cyber frauds, how to identify fake calls, and what to do if they get targeted.</div>
+          </div>
+        </div>
+        <div class="flex items-start gap-4 p-5 rounded-xl" style="background: rgba(44,104,123,0.05); border: 1px solid rgba(44,104,123,0.10);">
+          <div class="text-2xl font-bold" style="color:#C41717;">04</div>
+          <div>
+            <div class="font-semibold mb-1" style="color: #1E5468;">We put it all together</div>
+            <div class="text-sm leading-relaxed" style="color: #6E8A93;">The responses are analysed and visualised so that the patterns are visible - who is most vulnerable, which village has the highest internet usage, what types of fraud are most common.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- What We Found (only if survey data exists) -->
+    {% if total_responses %}
+    <div class="about-card p-8 scroll-reveal">
+      <div class="text-xs uppercase tracking-widest font-semibold mb-5" style="color: #8CC7C4;">What We Found So Far</div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <div class="text-3xl font-black mb-1" style="color: #8CC7C4;">{{ total_responses }}</div>
+          <div class="text-sm" style="color: #6E8A93;">Surveys completed</div>
+        </div>
+        <div>
+          <div class="text-3xl font-black mb-1" style="color: #C41717;">{{ total_villages }}</div>
+          <div class="text-sm" style="color: #6E8A93;">Villages covered</div>
+        </div>
+      </div>
+      <div class="mt-5 pt-5" style="border-top: 1px solid rgba(44,104,123,0.08);">
+        <a href="{% url 'analytics:dashboard' %}"
+           class="inline-flex items-center gap-2 text-sm font-semibold" style="color: #C41717;">
+          Explore the full findings ->
+        </a>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Expected Impact -->
+    <div class="scroll-reveal" style="background: rgba(140,199,196,0.04); border: 1px solid rgba(140,199,196,0.12); border-radius: 20px; padding: 32px;">
+      <div class="text-xs uppercase tracking-widest font-semibold mb-5" style="color: #8CC7C4;">What This Aims to Achieve</div>
+      <ul class="space-y-4">
+        {% for item in "A ground-level record of internet usage in rural Vizianagaram|Clear picture of who is at risk and from what types of fraud|A set of awareness materials that future CSP batches can reuse|Recommendations for community leaders and NGOs working in digital literacy|Proof that student-led community work can produce real, measurable impact"|split:"|" %}
+        <li class="flex items-start gap-3 text-sm" style="color: #476D79;">
+          <span style="color: #8CC7C4; margin-top: 2px;">-></span>
+          {{ item }}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- Mentor + Links -->
+    <div class="text-center scroll-reveal">
+      <p class="text-sm mb-2" style="color: #6E8A93;">
+        Under the mentorship of
+      </p>
+      <p class="text-xl font-bold mb-6" style="color: #1E5468;">{{ mentor_name }}</p>
+      <p class="text-sm mb-8" style="color: #6E8A93;">{{ college_name }}</p>
+      <div class="flex flex-wrap items-center justify-center gap-3">
+        <a href="{% url 'team:index' %}"
+           class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
+           style="background: rgba(219,26,26,0.10); border: 1px solid rgba(219,26,26,0.25); color: #C41717;">
+          Meet the Team ->
+        </a>
+        <a href="{% url 'visits:list' %}"
+           class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
+           style="background: rgba(255,255,255,0.04); border: 1px solid rgba(44,104,123,0.10); color: #476D79;">
+          Field Visit Log ->
+        </a>
+        <a href="{% url 'gallery:index' %}"
+           class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
+           style="background: rgba(255,255,255,0.04); border: 1px solid rgba(44,104,123,0.10); color: #476D79;">
+          Photo Gallery ->
+        </a>
+      </div>
+    </div>
+
+    <!-- Visit Timeline -->
+    {% if visits %}
+    <div class="scroll-reveal">
+      <div class="text-xs uppercase tracking-widest font-semibold mb-6" style="color: #6E8A93;">Project Timeline</div>
+      <div class="relative pl-8 space-y-5">
+        <div class="timeline-line"></div>
+        {% for visit in visits %}
+        <a href="{{ visit.get_absolute_url }}" class="relative flex items-start gap-4 group">
+          <div class="absolute -left-8 w-7 h-7 rounded-full flex items-center justify-center mt-0.5"
+               style="background: rgba(219,26,26,0.16); border: 2px solid rgba(219,26,26,0.34); z-index: 1;">
+            <span class="text-[8px] font-bold" style="color: #C41717;">D{{ visit.day_number }}</span>
+          </div>
+          <div class="flex-1 p-4 rounded-xl transition-all" style="background: rgba(44,104,123,0.04); border: 1px solid rgba(44,104,123,0.08);">
+            <div class="text-xs mb-1" style="color: #6E8A93;">{{ visit.date|date:"F j, Y" }}{% for v in visit.villages.all %} · {{ v.name }}{% endfor %}</div>
+            <div class="text-sm font-semibold group-hover:text-orange-400 transition-colors" style="color: #1E5468;">{{ visit.title }}</div>
+            {% if visit.summary %}<div class="text-xs mt-1 line-clamp-2" style="color: #6E8A93;">{{ visit.summary }}</div>{% endif %}
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% else %}
+    <div class="scroll-reveal text-center p-8 rounded-xl" style="background: rgba(219,26,26,0.04); border: 1px dashed rgba(219,26,26,0.20);">
+      <p class="text-sm mb-3" style="color: #6E8A93;">Field visit logs will appear here once added.</p>
+      <a href="/admin/visits/fieldvisit/add/" class="text-sm font-semibold" style="color: #C41717;">Add field visits -></a>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}
+
+
+

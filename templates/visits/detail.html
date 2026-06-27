@@ -1,0 +1,284 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Day {{ visit.day_number }}: {{ visit.title }} - CSP{% endblock %}
+
+{% block extra_head %}
+<style>
+.visit-hero {
+  position: relative; height: 62vh; min-height: 360px; overflow: hidden;
+}
+.visit-hero img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.visit-hero-scrim {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, #1E5468 0%, rgba(44,104,123,0.70) 40%, rgba(44,104,123,0.18) 75%, transparent 100%);
+}
+.visit-hero-top {
+  position: absolute; top: 0; left: 0; right: 0; height: 120px;
+  background: linear-gradient(to bottom, rgba(4,14,6,0.75), transparent);
+}
+.section-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: #D5E6EA;
+  font-family: 'Space Grotesk', sans-serif;
+  margin-bottom: 10px; display: block;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• HERO â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+{% if hero_photo_url %}
+<div class="visit-hero">
+  <img src="{{ hero_photo_url }}" alt="{{ visit.title }}">
+  <div class="visit-hero-scrim"></div>
+  <div class="visit-hero-top"></div>
+  <!-- Breadcrumb on top -->
+  <div class="absolute top-20 left-5 sm:left-8 flex items-center gap-2 text-xs z-10" style="color:#D5E6EA;">
+    <a href="{% url 'visits:list' %}" class="transition-colors" onmouseover="this.style.color='#8CC7C4'" onmouseout="this.style.color='#D5E6EA'">Field Visits</a>
+    <span>â€º</span>
+    <span>Day {{ visit.day_number }}</span>
+  </div>
+  <!-- Title overlay at bottom of hero -->
+  <div class="absolute bottom-0 left-0 right-0 max-w-4xl mx-auto px-5 sm:px-8 pb-10">
+    <div class="flex flex-wrap gap-2 mb-3">
+      <span class="px-3 py-1 rounded-lg text-xs font-bold" style="background:rgba(140,199,196,0.12);color:#8CC7C4;border:1px solid rgba(140,199,196,0.20);font-family:'Space Grotesk',sans-serif;">Day {{ visit.day_number }}</span>
+      <span class="text-xs py-1" style="color:#A4B9BD;">{{ visit.date|date:"F j, Y" }}</span>
+      {% for v in visit.villages.all %}
+      <a href="{{ v.get_absolute_url }}" class="px-3 py-1 rounded-lg text-xs transition-colors" style="background:rgba(140,199,196,0.06);border:1px solid rgba(140,199,196,0.10);color:#A4B9BD;" onmouseover="this.style.color='#8CC7C4'" onmouseout="this.style.color='#A4B9BD'">{{ v.name }}</a>
+      {% endfor %}
+    </div>
+    <h1 class="text-3xl sm:text-4xl font-bold leading-tight" style="color:#FFF6F6;font-family:'Space Grotesk',sans-serif;text-shadow:0 2px 12px rgba(0,0,0,0.5);">{{ visit.title }}</h1>
+  </div>
+</div>
+{% else %}
+<!-- No photo â€” text header -->
+<div class="pt-20 pb-10" style="background:#1E5468;border-bottom:1px solid rgba(140,199,196,0.06);">
+  <div class="max-w-4xl mx-auto px-5 sm:px-8">
+    <div class="flex items-center gap-2 text-xs mb-6 mt-4" style="color:#D5E6EA;">
+      <a href="{% url 'visits:list' %}" class="transition-colors" onmouseover="this.style.color='#8CC7C4'" onmouseout="this.style.color='#D5E6EA'">Field Visits</a>
+      <span>â€º</span>
+      <span>Day {{ visit.day_number }}</span>
+    </div>
+    <div class="flex flex-wrap gap-2 mb-4">
+      <span class="px-3 py-1 rounded-lg text-xs font-bold" style="background:rgba(140,199,196,0.10);color:#8CC7C4;font-family:'Space Grotesk',sans-serif;">Day {{ visit.day_number }}</span>
+      <span class="text-xs" style="color:#A4B9BD;">{{ visit.date|date:"F j, Y" }}</span>
+      {% for v in visit.villages.all %}
+      <a href="{{ v.get_absolute_url }}" class="px-3 py-1 rounded-lg text-xs" style="background:rgba(16,208,104,0.05);border:1px solid rgba(140,199,196,0.10);color:#A4B9BD;">{{ v.name }}</a>
+      {% endfor %}
+    </div>
+    <h1 class="text-3xl sm:text-4xl font-bold leading-tight" style="color:#FFF6F6;font-family:'Space Grotesk',sans-serif;">{{ visit.title }}</h1>
+  </div>
+</div>
+{% endif %}
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• BODY â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<div class="pb-20" style="background:#1E5468;">
+  <div class="max-w-4xl mx-auto px-5 sm:px-8 pt-10">
+
+    <!-- Summary -->
+    <p class="text-base leading-relaxed mb-10" style="color:#A4B9BD;">{{ visit.summary }}</p>
+
+    <!-- Stats row -->
+    <div class="grid grid-cols-3 gap-3 mb-10">
+      <div class="rounded-xl p-4 text-center" style="background:#365F6C;border:1px solid rgba(140,199,196,0.08);">
+        <div class="text-2xl font-bold mb-1" style="color:#FFF6F6;font-family:'Space Grotesk',sans-serif;">{{ visit.attendance }}</div>
+        <div class="text-[10px] uppercase tracking-wider" style="color:#8CC7C4;">Attended</div>
+      </div>
+      <div class="rounded-xl p-4 text-center" style="background:#365F6C;border:1px solid rgba(140,199,196,0.08);">
+        <div class="text-2xl font-bold mb-1" style="color:#FFF6F6;font-family:'Space Grotesk',sans-serif;">{{ visit.survey_responses.count }}</div>
+        <div class="text-[10px] uppercase tracking-wider" style="color:#8CC7C4;">Surveys</div>
+      </div>
+      <div class="rounded-xl p-4 text-center" style="background:#365F6C;border:1px solid rgba(140,199,196,0.08);">
+        <div class="text-2xl font-bold mb-1" style="color:#FFF6F6;font-family:'Space Grotesk',sans-serif;">{{ total_photo_count }}</div>
+        <div class="text-[10px] uppercase tracking-wider" style="color:#8CC7C4;">Photos</div>
+      </div>
+    </div>
+
+    <!-- Team -->
+    {% with visit.team_members.all as members %}
+    {% if members %}
+    <div class="rounded-xl p-5 mb-8" style="background:#365F6C;border:1px solid rgba(140,199,196,0.07);">
+      <span class="section-label">Team on this visit</span>
+      <div class="flex flex-wrap gap-3">
+        {% for member in members %}
+        <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg" style="background:rgba(16,208,104,0.04);border:1px solid rgba(140,199,196,0.07);">
+          {% if member.photo %}
+          <img src="{{ member.photo.url }}" alt="{{ member.name }}" class="w-7 h-7 rounded-full object-cover">
+          {% else %}
+          <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style="background:rgba(140,199,196,0.10);color:#8CC7C4;font-family:'Space Grotesk',sans-serif;">{{ member.name|first }}</div>
+          {% endif %}
+          <div>
+            <div class="text-xs font-semibold" style="color:#C4DACC;font-family:'Space Grotesk',sans-serif;">{{ member.name }}</div>
+            <div class="text-[10px]" style="color:#D5E6EA;">{{ member.get_role_display }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Content sections -->
+    <div class="space-y-6">
+
+      {% if visit.objectives %}
+      <div class="rounded-xl p-6" style="background:#365F6C;border:1px solid rgba(140,199,196,0.07);">
+        <span class="section-label">Objectives</span>
+        <ul class="space-y-2.5">
+          {% for obj in visit.objectives %}
+          <li class="flex items-start gap-3 text-sm" style="color:#A4B9BD;">
+            <span class="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style="background:#8CC7C4;"></span>
+            {{ obj }}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      {% if visit.activities %}
+      <div class="rounded-xl p-6" style="background:#365F6C;border:1px solid rgba(140,199,196,0.07);">
+        <span class="section-label">Activities</span>
+        <div class="space-y-2">
+          {% for activity in visit.activities %}
+          <div class="flex items-center gap-3 py-2.5" style="border-bottom:1px solid rgba(16,208,104,0.05);">
+            <span class="text-xs font-bold w-5 shrink-0 font-mono" style="color:#D5E6EA;">{{ forloop.counter }}</span>
+            <span class="text-sm" style="color:#C4DACC;">{{ activity }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if visit.observations %}
+      <div class="rounded-xl p-6" style="background:#365F6C;border:1px solid rgba(140,199,196,0.07);">
+        <span class="section-label">Observations</span>
+        <p class="text-sm leading-relaxed whitespace-pre-line" style="color:#A4B9BD;">{{ visit.observations }}</p>
+      </div>
+      {% endif %}
+
+      {% if visit.problems_faced or visit.solutions %}
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {% if visit.problems_faced %}
+        <div class="rounded-xl p-6" style="background:#365F6C;border:1px solid rgba(140,199,196,0.07);">
+          <span class="section-label">Challenges</span>
+          <p class="text-sm leading-relaxed whitespace-pre-line" style="color:#A4B9BD;">{{ visit.problems_faced }}</p>
+        </div>
+        {% endif %}
+        {% if visit.solutions %}
+        <div class="rounded-xl p-6" style="background:#365F6C;border:1px solid rgba(140,199,196,0.07);">
+          <span class="section-label">How we addressed them</span>
+          <p class="text-sm leading-relaxed whitespace-pre-line" style="color:#A4B9BD;">{{ visit.solutions }}</p>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% if visit.impact %}
+      <div class="rounded-xl p-6" style="background:rgba(16,208,104,0.04);border:1px solid rgba(140,199,196,0.10);">
+        <span class="section-label" style="color:#8CC7C4;">Impact & Lessons</span>
+        <p class="text-sm leading-relaxed whitespace-pre-line" style="color:#A4B9BD;">{{ visit.impact }}</p>
+      </div>
+      {% endif %}
+
+      <!-- Photos -->
+      {% if photos or vm_photos %}
+      <div>
+        <span class="section-label">Photos from this visit</span>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {% for photo in photos %}
+          <div class="group aspect-[4/3] overflow-hidden rounded-xl relative cursor-pointer"
+               onclick="openLightbox('{{ photo.image.url }}','{{ photo.caption|escapejs }}')">
+            <img src="{% if photo.thumbnail %}{{ photo.thumbnail.url }}{% else %}{{ photo.image.url }}{% endif %}"
+                 alt="{{ photo.caption }}"
+                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+            {% if photo.caption %}
+            <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3"
+                 style="background:linear-gradient(to top,rgba(3,10,5,0.85),transparent)">
+              <p class="text-xs" style="color:#C4DACC;">{{ photo.caption|truncatechars:60 }}</p>
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+          {% for m in vm_photos %}
+          <div class="group aspect-[4/3] overflow-hidden rounded-xl relative cursor-pointer"
+               onclick="openLightbox('{{ m.file.url }}','{{ m.caption|escapejs }}')">
+            <img src="{{ m.file.url }}" alt="{{ m.caption }}"
+                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+            {% if m.caption %}
+            <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3"
+                 style="background:linear-gradient(to top,rgba(3,10,5,0.85),transparent)">
+              <p class="text-xs" style="color:#C4DACC;">{{ m.caption|truncatechars:60 }}</p>
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+
+    <!-- Navigation -->
+    <div class="flex items-center justify-between mt-14 pt-8" style="border-top:1px solid rgba(140,199,196,0.07);">
+      {% if prev_visit %}
+      <a href="{{ prev_visit.get_absolute_url }}"
+         class="flex items-center gap-2 text-sm transition-colors" style="color:#D5E6EA;"
+         onmouseover="this.style.color='#8CC7C4'" onmouseout="this.style.color='#D5E6EA'">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        <div>
+          <div class="text-[10px] uppercase tracking-wider" style="color:#8CC7C4;">Previous</div>
+          <div>Day {{ prev_visit.day_number }}</div>
+        </div>
+      </a>
+      {% else %}<div></div>{% endif %}
+
+      <a href="{% url 'visits:list' %}" class="text-xs transition-colors" style="color:#8CC7C4;"
+         onmouseover="this.style.color='#A4B9BD'" onmouseout="this.style.color='#8CC7C4'">All Visits</a>
+
+      {% if next_visit %}
+      <a href="{{ next_visit.get_absolute_url }}"
+         class="flex items-center gap-2 text-sm transition-colors text-right" style="color:#D5E6EA;"
+         onmouseover="this.style.color='#8CC7C4'" onmouseout="this.style.color='#D5E6EA'">
+        <div>
+          <div class="text-[10px] uppercase tracking-wider" style="color:#8CC7C4;">Next</div>
+          <div>Day {{ next_visit.day_number }}</div>
+        </div>
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </a>
+      {% else %}<div></div>{% endif %}
+    </div>
+
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden"
+     style="background:rgba(2,8,3,0.94);backdrop-filter:blur(16px);" onclick="closeLightbox()">
+  <button onclick="closeLightbox()" class="absolute top-5 right-5 w-9 h-9 rounded-full flex items-center justify-center text-sm z-10" style="background:rgba(140,199,196,0.08);color:rgba(255,255,255,0.6);border:1px solid rgba(16,208,104,0.15);">×</button>
+  <img id="lightbox-img" src="" alt="" class="max-h-[88vh] max-w-[90vw] object-contain rounded-xl shadow-2xl">
+  <p id="lightbox-caption" class="absolute bottom-6 left-0 right-0 text-center text-sm px-8" style="color:rgba(196,218,204,0.60);"></p>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openLightbox(src, caption) {
+  if (event) event.stopPropagation();
+  document.getElementById('lightbox').classList.remove('hidden');
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox-caption').textContent = caption;
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+</script>
+{% endblock %}
+

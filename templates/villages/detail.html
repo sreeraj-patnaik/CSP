@@ -1,0 +1,217 @@
+﻿{% extends "base.html" %}
+{% load static humanize core_tags %}
+
+{% block title %}{{ village.name }} - CSP{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen">
+
+  <!-- Hero -->
+  <div class="relative pt-16 pb-0 overflow-hidden"
+       style="min-height: 440px; background: linear-gradient(135deg, #FFF6F6 0%, {{ village.color_accent }}14 100%);">
+    {% if village.hero_image %}
+    <div class="absolute inset-0">
+      <img src="{{ village.hero_image.url }}" alt="{{ village.name }}" class="w-full h-full object-cover opacity-20">
+      <div class="absolute inset-0 bg-gradient-to-t from-surface-900 via-surface-900/60 to-transparent"></div>
+    </div>
+    {% endif %}
+    <div class="relative max-w-5xl mx-auto px-4 sm:px-6 pt-20 pb-16">
+      <div class="flex items-center gap-3 mb-4 text-sm text-slate-600">
+        <a href="{% url 'villages:list' %}" class="hover:text-slate-800 transition-colors">Villages</a>
+        <span>></span>
+        <span class="text-slate-800">{{ village.name }}</span>
+      </div>
+      <div class="flex items-end justify-between gap-6 flex-wrap">
+        <div>
+          <div class="inline-block px-3 py-1 rounded-full text-xs font-medium mb-4 border"
+               style="background: {{ village.color_accent }}20; border-color: {{ village.color_accent }}40; color: {{ village.color_accent }};">
+            Survey Village
+          </div>
+          <h1 class="text-5xl font-black mb-3" style="color:#1E5468;">{{ village.name }}</h1>
+          <p class="text-slate-600 text-lg max-w-xl leading-relaxed">
+            {{ village.description|default:"A rural village included in our cyber awareness survey." }}
+          </p>
+        </div>
+        <div class="flex gap-3">
+          <div class="glass-card rounded-2xl px-5 py-4 text-center" style="background:#FFFFFF;border:1px solid rgba(44,104,123,0.14);">
+            <div class="text-2xl font-black text-slate-800">{{ survey_stats.total }}</div>
+            <div class="text-xs text-slate-500 mt-1">Surveys</div>
+          </div>
+          <div class="glass-card rounded-2xl px-5 py-4 text-center" style="background:#FFFFFF;border:1px solid rgba(44,104,123,0.14);">
+            <div class="text-2xl font-black" style="color: {{ village.color_accent }}">{{ survey_stats.internet_pct|default:0 }}%</div>
+            <div class="text-xs text-slate-500 mt-1">Internet</div>
+          </div>
+          {% if village.population %}
+          <div class="glass-card rounded-2xl px-5 py-4 text-center" style="background:#FFFFFF;border:1px solid rgba(44,104,123,0.14);">
+            <div class="text-2xl font-black text-[#1E5468]">{{ village.population|intcomma }}</div>
+            <div class="text-xs text-slate-500 mt-1">Population</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12 space-y-10">
+
+    <!-- Stats Cards -->
+    {% if survey_stats.total > 0 %}
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="glass-card rounded-2xl p-5 text-center" style="background:#FFFFFF;border:1px solid rgba(44,104,123,0.14);">
+        <div class="text-3xl font-black text-slate-800">{{ survey_stats.internet_pct }}%</div>
+        <div class="text-xs text-slate-500 mt-1">Use Internet</div>
+        <div class="mt-2 h-1 bg-surface-100 rounded-full">
+          <div class="h-full rounded-full" style="width: {{ survey_stats.internet_pct }}%; background: {{ village.color_accent }};"></div>
+        </div>
+      </div>
+      <div class="glass-card rounded-2xl p-5 text-center" style="background:#FFFFFF;border:1px solid rgba(44,104,123,0.14);">
+        <div class="text-3xl font-black text-emerald-600">{{ survey_stats.otp_pct }}%</div>
+        <div class="text-xs text-slate-500 mt-1">OTP Aware</div>
+        <div class="mt-2 h-1 bg-surface-100 rounded-full">
+          <div class="h-full rounded-full bg-emerald-500" style="width: {{ survey_stats.otp_pct }}%;"></div>
+        </div>
+      </div>
+      <div class="glass-card rounded-2xl p-5 text-center" style="background:#FFFFFF;border:1px solid rgba(44,104,123,0.14);">
+        <div class="text-3xl font-black text-red-600">{{ survey_stats.fraud_pct }}%</div>
+        <div class="text-xs text-slate-500 mt-1">Fraud Cases</div>
+        <div class="mt-2 h-1 bg-surface-100 rounded-full">
+          <div class="h-full rounded-full bg-red-500" style="width: {{ survey_stats.fraud_pct }}%;"></div>
+        </div>
+      </div>
+      <div class="glass-card rounded-2xl p-5 text-center" style="background:#FFFFFF;border:1px solid rgba(44,104,123,0.14);">
+        <div class="text-3xl font-black text-amber-600">{{ visits.count }}</div>
+        <div class="text-xs text-slate-500 mt-1">Field Visits</div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Location Map -->
+    {% if village.latitude and village.longitude %}
+    <div class="glass-card rounded-2xl overflow-hidden" style="background:#FFFFFF;border:1px solid rgba(44,104,123,0.14);">
+      <div class="p-4 border-b border-slate-200">
+        <h2 class="text-sm font-semibold text-slate-800">Location</h2>
+        <p class="text-xs text-slate-500 mt-0.5">{{ village.latitude }}, {{ village.longitude }}</p>
+      </div>
+      <div id="village-map" style="height: 300px;"></div>
+    </div>
+    {% endif %}
+
+    <!-- Field Visits -->
+    {% if visits %}
+    <div>
+      <h2 class="text-sm font-semibold text-slate-600 uppercase tracking-wider mb-4">Field Visits to {{ village.name }}</h2>
+      <div class="space-y-3">
+        {% for visit in visits %}
+        <a href="{{ visit.get_absolute_url }}"
+           class="flex items-center gap-4 glass-card rounded-xl p-4 hover:border-slate-300 transition-all group" style="background:#FFFFFF;border:1px solid rgba(44,104,123,0.14);">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0"
+               style="background: {{ village.color_accent }}18; color: {{ village.color_accent }};">
+            D{{ visit.day_number }}
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium text-slate-800 group-hover:text-[#C41717] transition-colors truncate">{{ visit.title }}</div>
+            <div class="text-xs text-slate-500">{{ visit.date|date:"F j, Y" }} · {{ visit.attendance }} attendees</div>
+          </div>
+          <div class="text-xs text-slate-600 shrink-0">{{ visit.survey_responses.count }} surveys</div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Observations -->
+    {% if observations %}
+    <div>
+      <h2 class="text-sm font-semibold text-slate-600 uppercase tracking-wider mb-4">Field Observations</h2>
+      <div class="space-y-3">
+        {% for obs in observations %}
+        <div class="glass-card rounded-xl p-5" style="background:#FFFFFF;border:1px solid rgba(44,104,123,0.14);">
+          <div class="flex items-center gap-2 mb-2">
+            {% if obs.category == 'positive' %}<span class="text-emerald-600 text-sm">OK</span>
+            {% elif obs.category == 'challenge' %}<span class="text-amber-600 text-sm">!</span>
+            {% elif obs.category == 'recommendation' %}<span class="text-[#1E5468] text-sm">i</span>
+            {% else %}<span class="text-slate-600 text-sm">*</span>{% endif %}
+            <h3 class="text-sm font-semibold text-slate-800">{{ obs.title }}</h3>
+          </div>
+          <p class="text-slate-600 text-sm leading-relaxed">{{ obs.content }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Photos -->
+    {% if photos or vm_photos %}
+    <div>
+      <h2 class="text-sm font-semibold text-slate-600 uppercase tracking-wider mb-4">Gallery</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {% for photo in photos %}
+        <div class="group aspect-square overflow-hidden rounded-xl cursor-pointer relative">
+          <img src="{% if photo.thumbnail %}{{ photo.thumbnail.url }}{% else %}{{ photo.image.url }}{% endif %}"
+               alt="{{ photo.caption }}"
+               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-400">
+          <div class="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+            <p class="text-slate-800 text-xs line-clamp-2">{{ photo.caption|truncatechars:50 }}</p>
+          </div>
+        </div>
+        {% endfor %}
+        {% for m in vm_photos %}
+        <div class="group aspect-square overflow-hidden rounded-xl cursor-pointer relative">
+          <img src="{{ m.file.url }}" alt="{{ m.caption }}"
+               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-400">
+          {% if m.caption %}
+          <div class="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+            <p class="text-slate-800 text-xs line-clamp-2">{{ m.caption|truncatechars:50 }}</p>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      <div class="mt-3">
+        <a href="{% url 'gallery:index' %}" class="text-sm text-[#C41717] hover:text-[#D83434] transition-colors">
+          Full Gallery
+        </a>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Nearby villages -->
+    {% if all_villages %}
+    <div class="border-t border-slate-200 pt-10">
+      <h2 class="text-sm font-semibold text-slate-600 uppercase tracking-wider mb-4">Other Villages</h2>
+      <div class="flex flex-wrap gap-3">
+        {% for v in all_villages %}
+        <a href="{{ v.get_absolute_url }}"
+           class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-800 hover:border-slate-300 text-sm transition-all flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full" style="background: {{ v.color_accent }};"></span>
+          {{ v.name }}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+{% if village.latitude and village.longitude %}
+<script>
+const map = L.map('village-map').setView([{{ village.latitude }}, {{ village.longitude }}], 14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+L.circleMarker([{{ village.latitude }}, {{ village.longitude }}], {
+  radius: 14, fillColor: '{{ village.color_accent }}', color: '#1E5468', weight: 3,
+  fillOpacity: 0.9
+}).addTo(map).bindPopup('<strong>{{ village.name }}</strong>').openPopup();
+</script>
+{% endif %}
+{% endblock %}
+

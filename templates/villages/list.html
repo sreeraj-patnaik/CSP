@@ -1,0 +1,131 @@
+﻿{% extends "base.html" %}
+{% load static humanize %}
+
+{% block title %}Villages - CSP{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+{% endblock %}
+
+{% block content %}
+<div class="pt-20 pb-16 min-h-screen">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+    <div class="mb-12">
+      <div class="text-xs uppercase tracking-widest font-semibold mb-2" style="color:#C41717;">Coverage Area</div>
+      <h1 class="text-4xl font-bold" style="color:#1E5468;">Survey Villages</h1>
+      <p class="text-slate-600 mt-2">Explore each village's internet usage data, field observations, and survey statistics.</p>
+    </div>
+
+    <!-- Interactive Map -->
+    <div class="glass-card rounded-2xl overflow-hidden mb-10" style="height:400px;background:#FFFFFF;border:1px solid rgba(44,104,123,0.14);">
+      <div id="villages-map" style="height:100%;width:100%;"></div>
+    </div>
+
+    <!-- Village Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {% for village in villages %}
+      <a href="{{ village.get_absolute_url }}"
+         class="group village-card relative overflow-hidden rounded-2xl bg-white/95 backdrop-blur-sm p-6 hover:-translate-y-2 transition-all duration-400" style="border:1px solid rgba(44,104,123,0.14);">
+        <div class="absolute top-0 left-0 right-0 h-1.5 rounded-t-2xl" style="background: linear-gradient(90deg, {{ village.color_accent }}, {{ village.color_accent }}80);"></div>
+
+        {% if village.hero_image %}
+        <div class="absolute inset-0 rounded-2xl overflow-hidden -z-10">
+          <img src="{{ village.hero_image.url }}" alt="{{ village.name }}" class="w-full h-full object-cover opacity-10 group-hover:opacity-20 transition-opacity duration-500">
+        </div>
+        {% endif %}
+
+        <div class="relative">
+          <div class="mb-4 h-36 rounded-2xl overflow-hidden" style="border:1px solid rgba(30,84,104,0.14);">
+            {% if village.card_thumbnail_url %}
+            <img src="{{ village.card_thumbnail_url }}"
+                 alt="{{ village.name }} field visit photo"
+                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                 loading="lazy" decoding="async">
+            {% else %}
+            <div class="h-full w-full flex flex-col items-center justify-center gap-2"
+                 style="background:linear-gradient(135deg,#E8F4F6 0%,#D4E9ED 50%,#C8E2E8 100%);">
+              <svg class="w-8 h-8 opacity-30" style="color:#1E5468;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+              </svg>
+              <span class="text-3xl font-black opacity-20" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">{{ village.name|slice:":1"|upper }}</span>
+            </div>
+            {% endif %}
+          </div>
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+               style="background:rgba(30,84,104,0.08); color:#1E5468;">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          </div>
+          <h2 class="text-xl font-bold mb-1" style="color:#1E5468;">{{ village.name }}</h2>
+          {% if village.population %}
+          <p class="text-xs mb-3" style="color:#6E8A93;">Population: ~{{ village.population|intcomma }}</p>
+          {% endif %}
+          <p class="text-sm mb-5 line-clamp-3" style="color:#6E8A93;">{{ village.description|default:"A rural village in our survey coverage area." }}</p>
+
+          <!-- Stats -->
+          <div class="grid grid-cols-3 gap-2 text-center text-xs mb-4">
+            <div class="rounded-lg p-2" style="background:#FFF6F6;border:1px solid rgba(30,84,104,0.12);">
+              <div class="font-bold" style="color:#1E5468;">{{ village.survey_count }}</div>
+              <div style="color:#6E8A93;">Surveys</div>
+            </div>
+            <div class="rounded-lg p-2" style="background:#FFF6F6;border:1px solid rgba(30,84,104,0.12);">
+              <div class="font-bold" style="color:#1E5468;">{{ village.visit_count }}</div>
+              <div style="color:#6E8A93;">Visits</div>
+            </div>
+            <div class="rounded-lg p-2" style="background:#FFF6F6;border:1px solid rgba(30,84,104,0.12);">
+              <div class="font-bold" style="color:#1E5468;">{{ village.internet_usage_pct }}%</div>
+              <div style="color:#6E8A93;">Internet</div>
+            </div>
+          </div>
+
+          <!-- Internet usage bar -->
+          <div class="mb-4">
+            <div class="flex justify-between text-xs mb-1" style="color:#6E8A93;">
+              <span>Internet Usage</span>
+              <span style="color: {{ village.color_accent }}">{{ village.internet_usage_pct }}%</span>
+            </div>
+            <div class="h-1.5 rounded-full overflow-hidden" style="background:rgba(30,84,104,0.10);">
+              <div class="h-full rounded-full transition-all duration-1000" style="width: {{ village.internet_usage_pct }}%; background: {{ village.color_accent }};"></div>
+            </div>
+          </div>
+
+          <div class="flex items-center text-xs font-medium" style="color: {{ village.color_accent }};">
+            Explore village ->
+          </div>
+        </div>
+      </a>
+      {% empty %}
+      <div class="col-span-4 text-center py-20 text-slate-600">
+        No villages configured. Add villages through the admin panel.
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const MAP_DATA = {{ map_data_json|safe }};
+const map = L.map('villages-map', { zoomControl: true }).setView([17.1, 82.05], 11);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors', maxZoom: 18
+}).addTo(map);
+MAP_DATA.forEach(v => {
+  const marker = L.circleMarker([v.lat, v.lng], {
+    radius: 14, fillColor: v.color, color: '#1E5468', weight: 3,
+    opacity: 1, fillOpacity: 0.85
+  }).addTo(map);
+  marker.bindPopup(`
+    <div style="font-family:Inter,sans-serif;padding:8px;min-width:160px;">
+      <strong style="color:#1E5468;font-size:14px;">${v.name}</strong><br>
+      <small style="color:#6E8A93;">Population: ${v.population?.toLocaleString() || 'N/A'}</small><br>
+      <small style="color:#6E8A93;">Surveys: ${v.survey_count} · Internet: ${v.internet_pct}%</small><br>
+      <a href="/villages/${v.slug}/" style="color:#C41717;font-size:12px;">View village -></a>
+    </div>
+  `);
+});
+</script>
+{% endblock %}
+
+

@@ -1,0 +1,254 @@
+﻿/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   CSP â€” Light theme. Emerald accent. Professional.
+   Backgrounds: white / surface-50. Text: dark. Emerald: CTAs + borders only.
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   :root {
+    --bg:         #F7FAF9;
+    --surface:    #FFFFFF;
+    --surface-2:  #F3F8F6;
+    --surface-3:  #EAF3EF;
+  
+    --emerald:        #8CC7C4;
+    --emerald-lt:     #22B66F;
+    --emerald-dk:     #2C687B;
+    --emerald-tint:   rgba(219,26,26,0.05);
+    --emerald-border: rgba(219,26,26,0.14);
+  
+    --ink:         #0F1E17;
+    --ink-body:    #253931;
+    --ink-muted:   #60756C;
+    --ink-faint:   #97ACA3;
+  
+    --border:    rgba(15,30,23,0.07);
+    --border-em: rgba(219,26,26,0.14);
+  
+    --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-sm: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.07), 0 8px 28px rgba(0,0,0,0.05);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.09), 0 20px 48px rgba(0,0,0,0.06);
+  
+    --t-fast: 140ms cubic-bezier(0.4,0,0.2,1);
+    --t-base: 240ms cubic-bezier(0.4,0,0.2,1);
+    --t-slow: 380ms cubic-bezier(0.23,1,0.32,1);
+  }
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; font-size:16px; }
+
+body {
+  font-family:'Inter',system-ui,sans-serif;
+  background-color:var(--bg);
+  color:var(--ink-body);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+::selection { background:rgba(219,26,26,0.15); color:var(--ink); }
+
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(219,26,26,0.18); border-radius:999px; }
+::-webkit-scrollbar-thumb:hover { background:rgba(219,26,26,0.32); }
+
+/* â”€â”€ Typography â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+h1,h2,h3,h4,h5,h6 {
+  font-family:'Space Grotesk',system-ui,sans-serif;
+  letter-spacing:-0.022em;
+  line-height:1.2;
+  color:var(--ink);
+}
+
+/* â”€â”€ Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  box-shadow:var(--shadow-sm);
+}
+.card-flat {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+}
+/* Legacy alias */
+.glass-card       { background:var(--surface); border:1px solid var(--border); box-shadow:var(--shadow-sm); }
+.glass-card-strong { background:var(--surface-2); border:1px solid var(--border); box-shadow:var(--shadow-sm); }
+
+/* â”€â”€ Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.nav-link {
+  display:inline-flex; align-items:center;
+  padding:5px 12px; border-radius:7px;
+  font-size:13.5px; font-weight:500;
+  color:var(--ink-muted); text-decoration:none;
+  transition:color var(--t-fast),background var(--t-fast);
+}
+.nav-link:hover { color:var(--ink); background:var(--surface-2); }
+.nav-link.active { color:var(--emerald-dk); background:var(--emerald-tint); }
+
+.mobile-nav-link {
+  display:block; padding:10px 12px; border-radius:8px;
+  font-size:14px; font-weight:500; color:var(--ink-muted); text-decoration:none;
+  transition:color var(--t-fast),background var(--t-fast);
+}
+.mobile-nav-link:hover { color:var(--ink); background:var(--surface-2); }
+
+/* â”€â”€ Buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.btn-primary {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:11px 26px; background:var(--emerald); color:#FFFFFF;
+  font-size:14px; font-weight:600; font-family:'Space Grotesk',sans-serif;
+  border-radius:9px; text-decoration:none; border:none; cursor:pointer;
+  transition:background var(--t-base),transform var(--t-fast),box-shadow var(--t-base);
+}
+.btn-primary:hover {
+  background:var(--emerald-lt);
+  transform:translateY(-1px);
+  box-shadow:0 4px 18px rgba(219,26,26,0.28);
+}
+
+.btn-secondary {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:11px 26px; background:var(--surface);
+  color:var(--ink-body); font-size:14px; font-weight:500;
+  border-radius:9px; text-decoration:none;
+  border:1px solid var(--border); cursor:pointer;
+  transition:all var(--t-base);
+}
+.btn-secondary:hover {
+  background:var(--surface-2);
+  border-color:rgba(0,0,0,0.12);
+  color:var(--ink);
+}
+
+.btn-ghost {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 16px; background:transparent;
+  color:var(--emerald-dk); font-size:13px; font-weight:500;
+  border-radius:8px; text-decoration:none;
+  border:1px solid var(--emerald-border);
+  transition:all var(--t-base); cursor:pointer;
+}
+.btn-ghost:hover { background:var(--emerald-tint); border-color:rgba(219,26,26,0.28); }
+
+/* â”€â”€ Stat cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.stat-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:14px; padding:20px 16px; text-align:center;
+  transition:transform var(--t-slow),box-shadow var(--t-slow);
+  box-shadow:var(--shadow-xs);
+}
+.stat-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
+.stat-number {
+  font-family:'Space Grotesk',sans-serif; font-weight:700;
+  font-size:2.2rem; letter-spacing:-0.03em; color:var(--ink); line-height:1;
+}
+.stat-label {
+  font-size:11px; font-weight:500; letter-spacing:0.05em;
+  text-transform:uppercase; color:var(--ink-faint); margin-top:6px;
+}
+
+/* â”€â”€ Village + visit cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.village-card { transition:transform var(--t-slow),box-shadow var(--t-slow); }
+.village-card:hover { transform:translateY(-5px); box-shadow:var(--shadow-lg); }
+
+/* â”€â”€ Photo cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.photo-card { position:relative; overflow:hidden; border-radius:14px; background:var(--surface-2); border:1px solid var(--border); }
+.photo-card img { width:100%; height:100%; object-fit:cover; transition:transform var(--t-slow); }
+.photo-card:hover img { transform:scale(1.04); }
+
+/* â”€â”€ Form inputs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.form-input {
+  width:100%; background:var(--surface);
+  border:1px solid var(--border); border-radius:9px;
+  padding:11px 16px; font-size:14px; color:var(--ink);
+  transition:border-color var(--t-fast),box-shadow var(--t-fast);
+  outline:none; font-family:'Inter',sans-serif;
+}
+.form-input:focus { border-color:var(--emerald-border); box-shadow:0 0 0 3px rgba(219,26,26,0.08); }
+.form-input::placeholder { color:var(--ink-faint); }
+
+.form-select {
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23587568' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 12px center; background-size:16px; padding-right:40px;
+}
+
+/* â”€â”€ Badges â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.badge {
+  display:inline-flex; align-items:center; padding:2px 10px;
+  border-radius:6px; font-size:11px; font-weight:500; border:1px solid transparent;
+}
+.badge-success  { background:#FFF6F6; color:#2C687B; border-color:#8CC7C4; }
+.badge-emerald  { background:#FFF6F6; color:#2C687B; border-color:#8CC7C4; }
+.badge-warning  { background:#FDECEC; color:#92400E; border-color:#D49A2A; }
+.badge-danger   { background:#FFF0F0; color:#DB1A1A; border-color:#FCA5A5; }
+.badge-neutral  { background:var(--surface-2); color:var(--ink-muted); border-color:var(--border); }
+.badge-accent   { background:#FFF6F6; color:#2C687B; border-color:#8CC7C4; }
+
+/* â”€â”€ Scroll reveal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.scroll-reveal { opacity:0; transform:translateY(20px); transition:opacity 0.55s ease,transform 0.55s ease; }
+.scroll-reveal.revealed { opacity:1; transform:translateY(0); }
+
+/* â”€â”€ Timeline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.timeline-line {
+  position:absolute; left:28px; top:0; bottom:0; width:1px;
+  background:linear-gradient(to bottom,var(--emerald-border),transparent);
+}
+
+/* â”€â”€ Insight cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.insight-danger  { background:#FFF0F0; border-color:#FCA5A5; }
+.insight-warning { background:#FDECEC; border-color:#D49A2A; }
+.insight-info    { background:var(--surface-2); border-color:var(--border); }
+.insight-success { background:#FFF6F6; border-color:#8CC7C4; }
+
+/* â”€â”€ Shadows (legacy aliases) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.shadow-glow-sm { box-shadow:var(--shadow-sm); }
+.shadow-glow-md { box-shadow:var(--shadow-md); }
+.shadow-glow-lg { box-shadow:var(--shadow-lg); }
+
+/* â”€â”€ AI chat prose â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.prose-ai p { margin-bottom:0.75em; }
+.prose-ai ul { margin-left:1.25em; margin-bottom:0.75em; }
+.prose-ai li { margin-bottom:0.25em; }
+.prose-ai strong { color:var(--ink); }
+.prose-ai code {
+  font-family:'JetBrains Mono',monospace; font-size:0.85em;
+  background:var(--surface-2); padding:1px 5px; border-radius:4px;
+  color:var(--emerald-dk); border:1px solid var(--border);
+}
+
+/* â”€â”€ Photo strip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.photo-strip { scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; }
+.photo-strip::-webkit-scrollbar { height:3px; }
+.photo-strip::-webkit-scrollbar-thumb { background:var(--emerald-border); border-radius:99px; }
+.photo-strip > * { scroll-snap-align:start; }
+
+/* â”€â”€ Shimmer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@keyframes shimmer { to { background-position:200% center; } }
+.shimmer {
+  background:linear-gradient(90deg,var(--surface-2) 25%,var(--surface-3) 50%,var(--surface-2) 75%);
+  background-size:200% 100%;
+  animation:shimmer 2s infinite;
+}
+
+/* â”€â”€ Testimonial cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.testimonial-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; position:relative; transition:border-color var(--t-base); }
+.testimonial-card:hover { border-color:var(--border-em); }
+.testimonial-card .quote-mark { font-size:72px; color:var(--surface-3); font-family:Georgia,serif; line-height:1; position:absolute; top:12px; left:20px; }
+
+/* â”€â”€ Chart container â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.chart-container { position:relative; width:100%; }
+
+/* â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@media (max-width:640px) {
+  h1 { font-size:clamp(2rem,8vw,4rem) !important; }
+  .stat-number { font-size:1.8rem; }
+}
+
+/* â”€â”€ Print â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@media print {
+  .no-print { display:none !important; }
+  body { background:white; color:#111; }
+}
+
+

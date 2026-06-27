@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Survey Data Table – CSP{% endblock %}
+
+{% block extra_head %}
+<style>
+  .data-table th { cursor: pointer; user-select: none; white-space: nowrap; }
+  .data-table th:hover { background: rgba(6,182,212,0.05); }
+  .sort-icon { display: inline-block; width: 12px; }
+  .row-detail { display: none; }
+  .row-detail.open { display: table-row; }
+  .filter-tag { animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity:0; transform: scale(0.9); } to { opacity:1; transform: scale(1); } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pt-20 pb-16 min-h-screen" x-data="surveyTable()">
+  <div class="max-w-[1400px] mx-auto px-4 sm:px-6 py-10">
+
+    <!-- Header -->
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
+      <div>
+        <div class="text-xs text-accent-400 uppercase tracking-widest font-medium mb-2">Research Data</div>
+        <h1 class="text-3xl font-bold text-white">Survey Responses</h1>
+        <p class="text-slate-400 mt-1 text-sm">
+          <span x-text="total"></span> total responses ·
+          <span x-text="filtered"></span> matching filters
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <a href="{% url 'surveys:export' %}?format=excel"
+           class="flex items-center gap-2 px-4 py-2.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-xl text-sm hover:bg-emerald-500/20 transition-all">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Excel
+        </a>
+        <a href="{% url 'surveys:export' %}?format=csv"
+           class="flex items-center gap-2 px-4 py-2.5 bg-blue-500/10 border border-blue-500/30 text-blue-400 rounded-xl text-sm hover:bg-blue-500/20 transition-all">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          CSV
+        </a>
+        <button onclick="window.print()"
+                class="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 text-slate-300 rounded-xl text-sm hover:bg-white/10 transition-all">
+          🖨️ Print
+        </button>
+      </div>
+    </div>
+
+    <!-- Filters Panel -->
+    <div class="glass-card rounded-2xl border border-white/5 p-5 mb-6">
+      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        <!-- Global search -->
+        <div class="col-span-2 sm:col-span-4 lg:col-span-2">
+          <input type="text" x-model.debounce.400ms="filters.search" placeholder="Search responses…"
+                 @input="fetchData()"
+                 class="w-full bg-surface-700 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-300 placeholder-slate-600 focus:outline-none focus:border-accent-500 transition-colors">
+        </div>
+        <!-- Village filter -->
+        <select x-model="filters.village" @change="fetchData()"
+                class="bg-surface-700 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-slate-300 focus:outline-none focus:border-accent-500 transition-colors">
+          <option value="">All Villages</option>
+          <option value="maharajupeta">Maharajupeta</option>
+          <option value="rajapulova">Rajapulova</option>
+          <option value="jonnada">Jonnada</option>
+          <option value="akulapeta">Akulapeta</option>
+        </select>
+        <!-- Age filter -->
+        <select x-model="filters.age" @change="fetchData()"
+                class="bg-surface-700 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-slate-300 focus:outline-none focus:border-accent-500 transition-colors">
+          <option value="">All Ages</option>
+          <option value="below_18">Below 18</option>
+          <option value="18_25">18–25</option>
+          <option value="26_35">26–35</option>
+          <option value="36_45">36–45</option>
+          <option value="46_60">46–60</option>
+          <option value="above_60">Above 60</option>
+        </select>
+        <!-- Education -->
+        <select x-model="filters.education" @change="fetchData()"
+                class="bg-surface-700 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-slate-300 focus:outline-none focus:border-accent-500 transition-colors">
+          <option value="">All Education</option>
+          <option value="none">No formal</option>
+          <option value="primary">Primary</option>
+          <option value="upper_primary">Upper Primary</option>
+          <option value="secondary">Secondary</option>
+          <option value="intermediate">Intermediate</option>
+          <option value="graduate">Graduate</option>
+          <option value="postgraduate">Postgraduate+</option>
+        </select>
+        <!-- Internet -->
+        <select x-model="filters.internet" @change="fetchData()"
+                class="bg-surface-700 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-slate-300 focus:outline-none focus:border-accent-500 transition-colors">
+          <option value="">All</option>
+          <option value="true">Internet Users</option>
+          <option value="false">Non-Users</option>
+        </select>
+        <!-- Awareness -->
+        <select x-model="filters.awareness" @change="fetchData()"
+                class="bg-surface-700 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-slate-300 focus:outline-none focus:border-accent-500 transition-colors">
+          <option value="">All Awareness</option>
+          <option value="very_low">Very Low</option>
+          <option value="low">Low</option>
+          <option value="moderate">Moderate</option>
+          <option value="high">High</option>
+          <option value="very_high">Very High</option>
+        </select>
+        <!-- Fraud -->
+        <select x-model="filters.fraud" @change="fetchData()"
+                class="bg-surface-700 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-slate-300 focus:outline-none focus:border-accent-500 transition-colors">
+          <option value="">All Fraud</option>
+          <option value="yes">Experienced</option>
+          <option value="no">Not Experienced</option>
+          <option value="not_sure">Not Sure</option>
+        </select>
+        <!-- Clear filters -->
+        <button @click="clearFilters()"
+                class="px-4 py-2.5 text-sm text-slate-500 hover:text-slate-300 border border-white/5 rounded-xl hover:border-white/10 transition-all">
+          Clear All
+        </button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="glass-card rounded-2xl border border-white/5 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="data-table w-full text-sm">
+          <thead>
+            <tr class="border-b border-white/5 bg-white/[0.03]">
+              <th class="px-4 py-3 text-left text-xs text-slate-500 uppercase tracking-wider font-medium" @click="sort('id'">#</th>
+              <th class="px-4 py-3 text-left text-xs text-slate-500 uppercase tracking-wider font-medium" @click="sort('submitted')">Date</th>
+              <th class="px-4 py-3 text-left text-xs text-slate-500 uppercase tracking-wider font-medium" @click="sort('village__name')">Village</th>
+              <th class="px-4 py-3 text-left text-xs text-slate-500 uppercase tracking-wider font-medium">Age</th>
+              <th class="px-4 py-3 text-left text-xs text-slate-500 uppercase tracking-wider font-medium">Education</th>
+              <th class="px-4 py-3 text-left text-xs text-slate-500 uppercase tracking-wider font-medium">Occupation</th>
+              <th class="px-4 py-3 text-left text-xs text-slate-500 uppercase tracking-wider font-medium">Internet</th>
+              <th class="px-4 py-3 text-left text-xs text-slate-500 uppercase tracking-wider font-medium">Awareness</th>
+              <th class="px-4 py-3 text-left text-xs text-slate-500 uppercase tracking-wider font-medium">OTP</th>
+              <th class="px-4 py-3 text-left text-xs text-slate-500 uppercase tracking-wider font-medium">Fraud</th>
+              <th class="px-4 py-3"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Loading state -->
+            <template x-if="loading">
+              <tr>
+                <td colspan="11" class="py-16 text-center">
+                  <div class="inline-flex items-center gap-3 text-slate-500">
+                    <div class="w-5 h-5 border-2 border-accent-500/30 border-t-accent-500 rounded-full animate-spin"></div>
+                    Loading responses…
+                  </div>
+                </td>
+              </tr>
+            </template>
+            <!-- Data rows -->
+            <template x-for="(row, idx) in rows" :key="row.id">
+              <tr class="border-b border-white/[0.03] hover:bg-white/[0.03] transition-colors cursor-pointer"
+                  @click="toggleDetail(row.id)">
+                <td class="px-4 py-3 text-slate-500 text-xs font-mono" x-text="row.id"></td>
+                <td class="px-4 py-3 text-slate-400 text-xs" x-text="row.submitted.slice(0,10)"></td>
+                <td class="px-4 py-3">
+                  <span class="text-slate-300 font-medium text-xs" x-text="row.village"></span>
+                </td>
+                <td class="px-4 py-3 text-slate-400 text-xs" x-text="row.age_group"></td>
+                <td class="px-4 py-3 text-slate-400 text-xs" x-text="row.education"></td>
+                <td class="px-4 py-3 text-slate-400 text-xs" x-text="row.occupation"></td>
+                <td class="px-4 py-3">
+                  <span :class="row.uses_internet
+                    ? 'bg-green-500/15 text-green-400 border-green-500/30'
+                    : 'bg-slate-500/15 text-slate-400 border-slate-500/30'"
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border"
+                        x-text="row.uses_internet ? 'Yes' : 'No'">
+                  </span>
+                </td>
+                <td class="px-4 py-3">
+                  <span x-text="row.cyber_awareness"
+                        :class="{
+                          'bg-red-500/15 text-red-400 border-red-500/30': row.cyber_awareness === 'Very Low',
+                          'bg-orange-500/15 text-orange-400 border-orange-500/30': row.cyber_awareness === 'Low',
+                          'bg-yellow-500/15 text-yellow-400 border-yellow-500/30': row.cyber_awareness === 'Moderate',
+                          'bg-green-500/15 text-green-400 border-green-500/30': row.cyber_awareness === 'High',
+                          'bg-emerald-500/15 text-emerald-400 border-emerald-500/30': row.cyber_awareness === 'Very High',
+                          'bg-slate-500/15 text-slate-500 border-slate-500/30': row.cyber_awareness === '—',
+                        }"
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border">
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-slate-500 text-xs max-w-[120px] truncate" x-text="row.knows_otp.slice(0,25)"></td>
+                <td class="px-4 py-3">
+                  <span x-text="row.faced_fraud"
+                        :class="{
+                          'bg-red-500/15 text-red-400 border-red-500/30': row.faced_fraud === 'Yes',
+                          'bg-green-500/15 text-green-400 border-green-500/30': row.faced_fraud === 'No',
+                          'bg-yellow-500/15 text-yellow-400 border-yellow-500/30': row.faced_fraud === 'Not Sure',
+                        }"
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border">
+                  </span>
+                </td>
+                <td class="px-4 py-3">
+                  <svg class="w-4 h-4 text-slate-600 hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                  </svg>
+                </td>
+              </tr>
+            </template>
+            <!-- Empty state -->
+            <template x-if="!loading && rows.length === 0">
+              <tr>
+                <td colspan="11" class="py-16 text-center text-slate-500 text-sm">
+                  No responses match your filters.
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-4 border-t border-white/5">
+        <div class="text-xs text-slate-500">
+          Showing <span x-text="(page-1)*perPage + 1"></span>–<span x-text="Math.min(page*perPage, total)"></span> of <span x-text="total"></span> responses
+        </div>
+        <div class="flex items-center gap-2">
+          <button @click="prevPage()" :disabled="page <= 1"
+                  class="px-3 py-1.5 text-xs rounded-lg border border-white/10 text-slate-400 disabled:opacity-30 hover:border-white/20 hover:text-white transition-all">
+            ← Prev
+          </button>
+          <span class="text-xs text-slate-500">Page <span x-text="page"></span> of <span x-text="pages"></span></span>
+          <button @click="nextPage()" :disabled="page >= pages"
+                  class="px-3 py-1.5 text-xs rounded-lg border border-white/10 text-slate-400 disabled:opacity-30 hover:border-white/20 hover:text-white transition-all">
+            Next →
+          </button>
+          <select x-model="perPage" @change="page=1;fetchData()"
+                  class="ml-2 bg-surface-700 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-slate-400 focus:outline-none">
+            <option value="25">25/page</option>
+            <option value="50">50/page</option>
+            <option value="100">100/page</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function surveyTable() {
+  return {
+    rows: [], total: 0, filtered: 0, page: 1, pages: 1, perPage: 25,
+    loading: true, sortCol: '-created_at',
+    filters: { search: '', village: '', age: '', education: '', internet: '', awareness: '', fraud: '' },
+    openRow: null,
+
+    init() { this.fetchData(); },
+
+    fetchData() {
+      this.loading = true;
+      const params = new URLSearchParams({
+        page: this.page, per_page: this.perPage, sort: this.sortCol,
+        ...Object.fromEntries(Object.entries(this.filters).filter(([,v]) => v !== ''))
+      });
+      fetch(`{% url 'surveys:table-data' %}?${params}`)
+        .then(r => r.json())
+        .then(data => {
+          this.rows = data.data;
+          this.total = data.total;
+          this.filtered = data.total;
+          this.pages = data.pages;
+          this.loading = false;
+        })
+        .catch(() => { this.loading = false; });
+    },
+
+    sort(col) {
+      this.sortCol = this.sortCol === col ? '-' + col : col;
+      this.fetchData();
+    },
+
+    prevPage() { if (this.page > 1) { this.page--; this.fetchData(); } },
+    nextPage() { if (this.page < this.pages) { this.page++; this.fetchData(); } },
+
+    clearFilters() {
+      this.filters = { search: '', village: '', age: '', education: '', internet: '', awareness: '', fraud: '' };
+      this.page = 1;
+      this.fetchData();
+    },
+
+    toggleDetail(id) { this.openRow = this.openRow === id ? null : id; },
+  };
+}
+</script>
+{% endblock %}

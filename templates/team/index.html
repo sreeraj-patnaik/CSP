@@ -1,0 +1,117 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Our Team - CSP{% endblock %}
+
+{% block content %}
+<div class="pt-20 pb-16 min-h-screen">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+    <div class="text-center mb-16 scroll-reveal">
+      <div class="text-xs text-accent-400 uppercase tracking-widest font-medium mb-2">The People Behind the Work</div>
+      <h1 class="text-5xl font-bold text-white mb-4">Our Team</h1>
+      <p class="text-slate-400 max-w-xl mx-auto">A dedicated group of students and faculty working together to improve cyber safety awareness in rural communities.</p>
+    </div>
+
+    <!-- Mentor -->
+    {% if mentor %}
+    <div class="mb-16 scroll-reveal">
+      <div class="text-xs text-slate-500 uppercase tracking-widest font-medium mb-6 text-center">Project Mentor</div>
+      <div class="max-w-sm mx-auto">
+        <div class="glass-card rounded-3xl border border-white/5 p-8 text-center hover:border-white/10 transition-all relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-b from-accent-500/5 to-transparent pointer-events-none"></div>
+          <div class="relative">
+            {% if mentor.photo %}
+            <img src="{{ mentor.photo.url }}" alt="{{ mentor.name }}"
+                 class="w-24 h-24 rounded-full object-cover mx-auto mb-4 ring-4 ring-accent-500/30">
+            {% else %}
+            <div class="w-24 h-24 rounded-full bg-gradient-to-br from-accent-500/30 to-violet-500/30 flex items-center justify-center mx-auto mb-4 ring-4 ring-accent-500/20 text-3xl">
+              Team
+            </div>
+            {% endif %}
+            <h3 class="text-xl font-bold text-white mb-1">{{ mentor.name }}</h3>
+            <p class="text-accent-400 text-sm font-medium mb-3">{{ mentor.designation }}</p>
+            {% if mentor.bio %}
+            <p class="text-slate-400 text-sm leading-relaxed">{{ mentor.bio }}</p>
+            {% endif %}
+            {% if mentor.email %}
+            <a href="mailto:{{ mentor.email }}" class="mt-4 inline-flex items-center gap-2 text-xs text-slate-500 hover:text-slate-300 transition-colors">
+              {{ mentor.email }}
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Leads -->
+    {% if leads %}
+    <div class="mb-16">
+      <div class="text-xs text-slate-500 uppercase tracking-widest font-medium mb-6 text-center">Project Leads</div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for member in leads %}
+        {% include "team/_member_card.html" with member=member accent="#1E5468" %}
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Members -->
+    {% if members %}
+    <div class="mb-16">
+      <div class="text-xs text-slate-500 uppercase tracking-widest font-medium mb-6 text-center">Team Members</div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {% for member in members %}
+        <div class="glass-card rounded-2xl border border-white/5 p-5 text-center hover:border-white/10 hover:-translate-y-1 transition-all duration-300 scroll-reveal">
+          {% if member.photo %}
+          <img src="{{ member.photo.url }}" alt="{{ member.name }}"
+               class="w-16 h-16 rounded-full object-cover mx-auto mb-3">
+          {% else %}
+          <div class="w-16 h-16 rounded-full bg-accent-500/15 flex items-center justify-center mx-auto mb-3 text-2xl">
+            {{ member.name|first }}
+          </div>
+          {% endif %}
+          <h3 class="font-semibold text-white text-sm">{{ member.name }}</h3>
+          {% if member.designation %}
+          <p class="text-slate-500 text-xs mt-0.5">{{ member.designation }}</p>
+          {% endif %}
+          {% if member.roll_number %}
+          <p class="text-slate-600 text-xs mt-0.5 font-mono">{{ member.roll_number }}</p>
+          {% endif %}
+          <div class="flex justify-center gap-2 mt-3">
+            {% if member.linkedin %}
+            <a href="{{ member.linkedin }}" target="_blank" class="text-slate-600 hover:text-blue-400 transition-colors text-xs">in</a>
+            {% endif %}
+            {% if member.github %}
+            <a href="{{ member.github }}" target="_blank" class="text-slate-600 hover:text-slate-300 transition-colors text-xs">gh</a>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Volunteers -->
+    {% if volunteers %}
+    <div>
+      <div class="text-xs text-slate-500 uppercase tracking-widest font-medium mb-6 text-center">Volunteers</div>
+      <div class="flex flex-wrap justify-center gap-3">
+        {% for member in volunteers %}
+        <div class="flex items-center gap-3 glass-card rounded-xl border border-white/5 px-4 py-2.5 hover:border-white/10 transition-all">
+          {% if member.photo %}
+          <img src="{{ member.photo.url }}" alt="{{ member.name }}" class="w-7 h-7 rounded-full object-cover">
+          {% else %}
+          <div class="w-7 h-7 rounded-full bg-accent-500/15 flex items-center justify-center text-xs text-accent-400">{{ member.name|first }}</div>
+          {% endif %}
+          <span class="text-slate-300 text-sm">{{ member.name }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}
+

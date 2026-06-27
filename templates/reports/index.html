@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Reports – CSP{% endblock %}
+
+{% block content %}
+<div class="pt-20 pb-16 min-h-screen">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-12">
+    <div class="mb-12">
+      <div class="text-xs text-accent-400 uppercase tracking-widest font-medium mb-2">Exports &amp; Reports</div>
+      <h1 class="text-4xl font-bold text-white">Reports &amp; Downloads</h1>
+      <p class="text-slate-400 mt-2">Auto-generated reports from survey data. Updated in real time.</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <!-- PDF Report -->
+      <a href="{% url 'reports:pdf' %}"
+         class="group glass-card rounded-2xl border border-white/5 hover:border-red-500/20 p-6 text-center hover:-translate-y-1 transition-all duration-300">
+        <div class="w-14 h-14 rounded-2xl bg-red-500/15 flex items-center justify-center mx-auto mb-4 group-hover:bg-red-500/25 transition-colors">
+          <svg class="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <h3 class="font-semibold text-white mb-2">PDF Report</h3>
+        <p class="text-slate-500 text-xs mb-4">Comprehensive survey summary with charts and insights. Suitable for presentations.</p>
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 text-red-400 text-xs rounded-lg">
+          ⬇️ Download PDF
+        </span>
+      </a>
+
+      <!-- Excel Export -->
+      <a href="{% url 'reports:excel' %}"
+         class="group glass-card rounded-2xl border border-white/5 hover:border-emerald-500/20 p-6 text-center hover:-translate-y-1 transition-all duration-300">
+        <div class="w-14 h-14 rounded-2xl bg-emerald-500/15 flex items-center justify-center mx-auto mb-4 group-hover:bg-emerald-500/25 transition-colors">
+          <svg class="w-6 h-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <h3 class="font-semibold text-white mb-2">Excel Export</h3>
+        <p class="text-slate-500 text-xs mb-4">All survey responses in a formatted Excel workbook with auto-fit columns.</p>
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 text-xs rounded-lg">
+          ⬇️ Download Excel
+        </span>
+      </a>
+
+      <!-- CSV Export -->
+      <a href="{% url 'reports:csv' %}"
+         class="group glass-card rounded-2xl border border-white/5 hover:border-blue-500/20 p-6 text-center hover:-translate-y-1 transition-all duration-300">
+        <div class="w-14 h-14 rounded-2xl bg-blue-500/15 flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-500/25 transition-colors">
+          <svg class="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <h3 class="font-semibold text-white mb-2">CSV Export</h3>
+        <p class="text-slate-500 text-xs mb-4">Raw survey data as a CSV file — can be opened in Excel or any spreadsheet software.</p>
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 text-blue-400 text-xs rounded-lg">
+          ⬇️ Download CSV
+        </span>
+      </a>
+    </div>
+
+    <!-- Import Section -->
+    <div class="mt-10 glass-card rounded-2xl border border-white/5 p-6">
+      <h2 class="font-semibold text-white mb-2">Import from Google Forms Excel</h2>
+      <p class="text-slate-400 text-sm mb-4">Upload the Excel file exported from Google Forms to bulk-import responses.</p>
+      {% if user.is_authenticated %}
+      <div x-data="{ file: null, result: null, loading: false }" class="flex items-center gap-3 flex-wrap">
+        <label class="cursor-pointer flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-slate-300 hover:bg-white/10 hover:text-white transition-all">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          <span x-text="file ? file.name : 'Choose Excel file'"></span>
+          <input type="file" accept=".xlsx,.xls" class="hidden" @change="file = $event.target.files[0]">
+        </label>
+        <button @click="uploadFile()" :disabled="!file || loading"
+                class="px-4 py-2.5 bg-accent-500 hover:bg-accent-400 text-white text-sm rounded-xl transition-all disabled:opacity-40 flex items-center gap-2">
+          <span x-show="loading" class="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin"></span>
+          Import
+        </button>
+        <div x-show="result" class="text-sm">
+          <span x-show="result?.created" class="text-emerald-400" x-text="`✅ Imported ${result.created} responses`"></span>
+          <span x-show="result?.errors?.length" class="text-amber-400 ml-3" x-text="`⚠️ ${result.errors.length} errors`"></span>
+        </div>
+      </div>
+      <script>
+        async function uploadFile() {
+          // bound via Alpine context
+        }
+      </script>
+      {% else %}
+      <div class="text-sm text-slate-500">
+        <a href="{% url 'accounts:login' %}" class="text-accent-400 hover:text-accent-300">Log in</a> to import data.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

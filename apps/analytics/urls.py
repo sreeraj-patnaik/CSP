@@ -1,0 +1,10 @@
+from django.urls import path
+from . import views
+
+app_name = "analytics"
+
+urlpatterns = [
+    path("", views.AnalyticsDashboardView.as_view(), name="dashboard"),
+    path("data/", views.analytics_data, name="data"),
+    path("insights/", views.auto_insights_view, name="insights"),
+]

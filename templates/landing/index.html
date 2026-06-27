@@ -1,0 +1,427 @@
+﻿{% extends "base.html" %}
+{% load static humanize core_tags %}
+
+{% block title %}CSP - Cyber Awareness in Rural Andhra Pradesh{% endblock %}
+
+{% block extra_head %}
+<style>
+.hero-bg { position:absolute;inset:0;background-size:cover;background-position:center; }
+.hero-scrim {
+  position:absolute;inset:0;
+  background:linear-gradient(160deg,rgba(20,34,43,0.90) 0%,rgba(20,34,43,0.76) 40%,rgba(20,34,43,0.58) 100%);
+}
+.hero-bottom { position:absolute;bottom:0;left:0;right:0;height:160px;pointer-events:none;
+  background:linear-gradient(to top,#FFF6F6,transparent); }
+
+.hero-village-card {
+  display:flex;align-items:center;gap:10px;padding:8px;border-radius:16px;
+  text-decoration:none;background:rgba(255,246,246,0.82);backdrop-filter:blur(12px);
+  border:1px solid rgba(44,104,123,0.16);box-shadow:0 10px 28px rgba(20,34,43,0.12);
+  transition:transform 0.25s cubic-bezier(0.23,1,0.32,1),box-shadow 0.25s ease,border-color 0.25s ease;
+}
+.hero-village-card:hover { transform:translateY(-3px); box-shadow:0 16px 34px rgba(20,34,43,0.18); border-color:rgba(219,26,26,0.24); }
+.hero-village-card img, .hero-village-fallback { width:44px; height:44px; border-radius:12px; flex-shrink:0; object-fit:cover; }
+.hero-village-fallback { display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#FDECEC,#F7E1E1); color:#1E5468; font-weight:700; font-family:'Space Grotesk',sans-serif; }
+.hero-village-meta { min-width:0; }
+.hero-village-name { display:block; font-size:12px; font-weight:700; color:#1E5468; line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.hero-village-pct { display:block; font-size:10px; color:#6E8A93; margin-top:2px; }
+
+.pulse-stat {
+  background:#FFFFFF; border:1px solid #E8DCDC; border-radius:14px; padding:26px 22px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04);
+}
+.visit-photo-card {
+  position:relative;border-radius:14px;overflow:hidden;
+  aspect-ratio:3/4;background:#FDECEC;border:1px solid #F7E1E1;
+  transition:transform 0.38s cubic-bezier(0.23,1,0.32,1),box-shadow 0.38s ease;
+  display:block;text-decoration:none;
+}
+.visit-photo-card:hover { transform:translateY(-5px);box-shadow:0 16px 48px rgba(0,0,0,0.12); }
+.visit-photo-card img { position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform 0.55s cubic-bezier(0.23,1,0.32,1); }
+.visit-photo-card:hover img { transform:scale(1.05); }
+.visit-overlay { position:absolute;inset:0;background:linear-gradient(to top,rgba(8,20,12,0.88) 0%,rgba(8,20,12,0.50) 45%,transparent 70%); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• HERO â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<section class="relative min-h-screen flex items-center overflow-hidden" style="background:#1E5468;">
+
+  {% if featured_photos %}
+    {% if featured_are_vm %}
+    <div class="hero-bg" style="background-image:url('{{ featured_photos.0.file.url }}');"></div>
+    {% else %}
+    <div class="hero-bg" style="background-image:url('{{ featured_photos.0.image.url }}');"></div>
+    {% endif %}
+  {% else %}
+  <div class="hero-bg" style="background:linear-gradient(160deg,#0A1A0F,#1E5468);"></div>
+  {% endif %}
+  <div class="hero-scrim"></div>
+  <div class="hero-bottom"></div>
+
+  <!-- Village thumbnails -->
+  <div class="absolute right-4 sm:right-8 z-20 hidden md:block" style="top:78px;">
+    <div class="grid grid-cols-2 gap-2 w-[290px]">
+      {% for village in villages|slice:":4" %}
+      <a href="{{ village.get_absolute_url }}" class="hero-village-card">
+        {% if village.card_thumbnail_url %}
+        <img src="{{ village.card_thumbnail_url }}" alt="{{ village.name }}">
+        {% else %}
+        <div class="hero-village-fallback">{{ village.name|slice:":1"|upper }}</div>
+        {% endif %}
+        <span class="hero-village-meta">
+          <span class="hero-village-name">{{ village.name }}</span>
+          <span class="hero-village-pct">{{ village.internet_usage_pct }}% online</span>
+        </span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="relative z-10 w-full max-w-5xl mx-auto px-5 sm:px-8 pt-28 pb-28">
+    <div class="inline-flex items-center gap-2 mb-7 px-3 py-1.5 rounded-full bg-white/10 border border-white/20">
+      <span class="w-1.5 h-1.5 rounded-full" style="background:#8CC7C4;"></span>
+      <span class="text-xs text-white/70 font-medium" style="font-family:'Space Grotesk',sans-serif;">{{ academic_year }} - Community Service Project</span>
+    </div>
+
+    <h1 class="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight mb-6 max-w-2xl" style="color:#FFFFFF;font-family:'Space Grotesk',sans-serif;">
+      What does rural<br>internet actually<br><span style="color:#8CC7C4;">look like?</span>
+    </h1>
+
+    <p class="text-base sm:text-lg leading-relaxed mb-10 max-w-md" style="color:rgba(255,255,255,0.60);">
+      We walked door-to-door across
+      <span style="color:rgba(255,255,255,0.85);">{{ total_villages|default:4 }} villages</span>
+      in Vizianagaram - asking farmers, homemakers, and students about phones, fraud, and what they actually know about staying safe online.
+    </p>
+
+    <div class="flex flex-wrap gap-3 mb-16">
+      <a href="{% url 'surveys:form' %}"
+         class="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-sm text-white transition-all duration-200 hover:-translate-y-0.5"
+         style="background:#C41717;font-family:'Space Grotesk',sans-serif;"
+         onmouseover="this.style.background='#A21010';this.style.boxShadow='0 6px 20px rgba(219,26,26,0.28)'"
+         onmouseout="this.style.background='#C41717';this.style.boxShadow='none'">
+        Add your voice ->
+      </a>
+      <a href="{% url 'analytics:dashboard' %}"
+         class="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-medium text-sm transition-all"
+         style="background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.20);color:rgba(255,255,255,0.75);"
+         onmouseover="this.style.background='rgba(255,255,255,0.18)'"
+         onmouseout="this.style.background='rgba(255,255,255,0.10)'">
+        Explore the data
+      </a>
+    </div>
+
+    <div class="flex flex-wrap gap-3">
+      <div class="stat-card flex-1 min-w-[72px]" style="background:rgba(255,255,255,0.10);border-color:rgba(255,255,255,0.15);box-shadow:none;">
+        <div class="stat-number" style="color:#FFFFFF;">{{ total_villages|default:4 }}</div>
+        <div class="stat-label" style="color:rgba(255,255,255,0.40);">Villages</div>
+      </div>
+      <div class="stat-card flex-1 min-w-[72px]" style="background:rgba(255,255,255,0.10);border-color:rgba(255,255,255,0.15);box-shadow:none;">
+        <div class="stat-number" style="color:#FFFFFF;">{{ total_volunteers|default:0 }}</div>
+        <div class="stat-label" style="color:rgba(255,255,255,0.40);">Volunteers</div>
+      </div>
+      <div class="stat-card flex-1 min-w-[72px]" style="background:rgba(255,255,255,0.10);border-color:rgba(255,255,255,0.15);box-shadow:none;">
+        <div class="stat-number" style="color:#FFFFFF;">{{ total_responses|default:0 }}</div>
+        <div class="stat-label" style="color:rgba(255,255,255,0.40);">Surveys</div>
+      </div>
+      <div class="stat-card flex-1 min-w-[72px]" style="background:rgba(255,255,255,0.10);border-color:rgba(255,255,255,0.15);box-shadow:none;">
+        <div class="stat-number" style="color:#FFFFFF;">{{ total_awareness_sessions|default:0 }}</div>
+        <div class="stat-label" style="color:rgba(255,255,255,0.40);">Field Visits</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• PHOTO STRIP â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+{% if featured_photos %}
+<section class="py-12 bg-white">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 mb-5 scroll-reveal">
+    <p class="text-xs uppercase tracking-widest font-semibold mb-1" style="color:#6E8A93;font-family:'Space Grotesk',sans-serif;">From the Field</p>
+    <h2 class="text-2xl font-bold" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Moments that shaped the project</h2>
+  </div>
+  <div class="flex gap-3 pl-5 sm:pl-8 overflow-x-auto pb-3 photo-strip" style="padding-right:1.5rem;">
+    {% for photo in featured_photos %}
+    <div class="flex-none rounded-xl overflow-hidden cursor-pointer group relative"
+         style="width:230px;height:165px;box-shadow:0 2px 8px rgba(0,0,0,0.10);"
+         {% if featured_are_vm %}onclick="openLightbox('{{ photo.file.url }}','{{ photo.caption|escapejs }}')"
+         {% else %}onclick="openLightbox('{{ photo.image.url }}','{{ photo.caption|escapejs }}')"{% endif %}>
+      {% if featured_are_vm %}
+      <img src="{{ photo.file.url }}" alt="{{ photo.caption }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-600">
+      {% else %}
+      <img src="{% if photo.thumbnail %}{{ photo.thumbnail.url }}{% else %}{{ photo.image.url }}{% endif %}" alt="{{ photo.caption }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-600">
+      {% endif %}
+      <div class="absolute inset-0 flex items-end p-3 opacity-0 group-hover:opacity-100 transition-opacity"
+           style="background:linear-gradient(to top,rgba(8,20,12,0.75),transparent)">
+        <p class="text-xs text-white line-clamp-2">{{ photo.caption }}</p>
+      </div>
+    </div>
+    {% endfor %}
+    <a href="{% url 'gallery:index' %}"
+       class="flex-none rounded-xl flex flex-col items-center justify-center gap-2 transition-all shrink-0 hover:border-emerald-300"
+       style="width:120px;height:165px;border:1px dashed #F7E1E1;background:#FFF6F6;">
+      <svg class="w-6 h-6" style="color:#6E8A93;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909"/>
+      </svg>
+      <span class="text-xs font-medium" style="color:#6E8A93;">Full Gallery</span>
+    </a>
+  </div>
+</section>
+{% endif %}
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• VILLAGES â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<section class="py-20" style="background:#FFF6F6;">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex items-end justify-between mb-12 scroll-reveal">
+      <div>
+        <p class="text-xs uppercase tracking-widest font-semibold mb-2" style="color:#6E8A93;font-family:'Space Grotesk',sans-serif;">Where we worked</p>
+        <h2 class="text-4xl sm:text-5xl font-bold" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Four villages. One corridor.</h2>
+      </div>
+      <a href="{% url 'villages:list' %}" class="text-sm font-medium hidden sm:block" style="color:#C41717;">All villages -></a>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {% for village in villages %}
+      <a href="{{ village.get_absolute_url }}"
+         class="village-card group rounded-2xl overflow-hidden block text-decoration-none"
+         style="background:#FFFFFF;border:1px solid #E8DCDC;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+        <div class="relative h-44 overflow-hidden">
+          {% if village.card_thumbnail_url %}
+          <img src="{{ village.card_thumbnail_url }}" alt="{{ village.name }}"
+               class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-500">
+          {% else %}
+          <div class="absolute inset-0 flex items-center justify-center"
+               style="background:linear-gradient(135deg,#E8F4F6 0%,#D4E9ED 50%,#C8E2E8 100%);">
+            <div class="flex flex-col items-center gap-2 opacity-40">
+              <svg class="w-10 h-10" style="color:#1E5468;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+              </svg>
+              <span class="text-2xl font-black tracking-tight" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">{{ village.name|slice:":1"|upper }}</span>
+            </div>
+          </div>
+          {% endif %}
+          <div class="absolute inset-0" style="background:linear-gradient(to top,rgba(255,255,255,0.96) 0%,rgba(255,255,255,0.35) 55%,transparent 80%);"></div>
+          <div class="absolute bottom-0 left-0 right-0 px-4 pb-3">
+            <h3 class="font-bold text-base" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">{{ village.name }}</h3>
+          </div>
+        </div>
+        <div class="px-4 pb-4 pt-2">
+          <p class="text-xs mb-2" style="color:#6E8A93;">{{ village.district }}, {{ village.state }}</p>
+          {% if village.description %}
+          <p class="text-xs mb-4 leading-relaxed line-clamp-2" style="color:#6E8A93;">{{ village.description|truncatechars:80 }}</p>
+          {% endif %}
+          <div class="grid grid-cols-2 gap-2 mb-3">
+            <div class="rounded-lg py-2 px-3 text-center" style="background:#FFF6F6;border:1px solid #E8DCDC;">
+              <div class="font-bold text-sm" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">{{ village.survey_count }}</div>
+              <div class="text-[10px]" style="color:#6E8A93;">Surveys</div>
+            </div>
+            <div class="rounded-lg py-2 px-3 text-center" style="background:#FFF6F6;border:1px solid #E8DCDC;">
+              <div class="font-bold text-sm" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">{{ village.internet_usage_pct }}%</div>
+              <div class="text-[10px]" style="color:#6E8A93;">Online</div>
+            </div>
+          </div>
+          <span class="text-xs font-semibold flex items-center gap-1" style="color:#C41717;">
+            Read profile
+            <svg class="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          </span>
+        </div>
+      </a>
+      {% empty %}
+      {% for i in "1234" %}
+      <div class="rounded-2xl overflow-hidden" style="background:#FFFFFF;border:1px solid #E8DCDC;opacity:0.5;">
+        <div class="h-40 shimmer"></div>
+        <div class="p-4"><div class="h-4 rounded shimmer mb-2 w-3/4"></div><div class="h-3 rounded shimmer w-1/2"></div></div>
+      </div>
+      {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• DATA NUMBERS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+{% if total_responses %}
+<section class="py-20 bg-white">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="scroll-reveal mb-12">
+      <p class="text-xs uppercase tracking-widest font-semibold mb-2" style="color:#6E8A93;font-family:'Space Grotesk',sans-serif;">{{ total_responses }} survey responses</p>
+      <h2 class="text-4xl font-bold" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">The numbers speak plainly.</h2>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 scroll-reveal">
+      <div class="pulse-stat">
+        <div class="text-4xl font-bold mb-2" style="color:#C41717;font-family:'Space Grotesk',sans-serif;letter-spacing:-0.03em;">{{ internet_pct }}%</div>
+        <div class="font-semibold text-sm mb-1" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Use the internet</div>
+        <div class="text-xs leading-relaxed" style="color:#6E8A93;">of surveyed residents regularly go online</div>
+      </div>
+      <div class="pulse-stat">
+        <div class="text-4xl font-bold mb-2" style="color:#C41717;font-family:'Space Grotesk',sans-serif;letter-spacing:-0.03em;">{{ otp_aware_pct }}%</div>
+        <div class="font-semibold text-sm mb-1" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Know OTP safety</div>
+        <div class="text-xs leading-relaxed" style="color:#6E8A93;">confirmed they would never share their OTP with anyone</div>
+      </div>
+      <div class="pulse-stat">
+        <div class="text-4xl font-bold mb-2" style="color:#C41717;font-family:'Space Grotesk',sans-serif;letter-spacing:-0.03em;">{{ high_awareness_pct }}%</div>
+        <div class="font-semibold text-sm mb-1" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Rate themselves aware</div>
+        <div class="text-xs leading-relaxed" style="color:#6E8A93;">self-reported High or Very High cyber safety awareness</div>
+      </div>
+      <div class="pulse-stat">
+        <div class="text-4xl font-bold mb-2" style="color:#C41717;font-family:'Space Grotesk',sans-serif;letter-spacing:-0.03em;">{{ fraud_count }}</div>
+        <div class="font-semibold text-sm mb-1" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Encountered fraud</div>
+        <div class="text-xs leading-relaxed" style="color:#6E8A93;">reported facing scams, phishing, or suspicious activity</div>
+      </div>
+    </div>
+    <div class="mt-6 text-right">
+      <a href="{% url 'analytics:dashboard' %}" class="text-sm font-medium" style="color:#C41717;">Full analytics -></a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• FIELD VISITS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+{% if recent_visits %}
+<section class="py-20" style="background:#FFF6F6;">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex items-end justify-between mb-12 scroll-reveal">
+      <div>
+        <p class="text-xs uppercase tracking-widest font-semibold mb-2" style="color:#6E8A93;font-family:'Space Grotesk',sans-serif;">Ground truth</p>
+        <h2 class="text-4xl font-bold" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Days in the field</h2>
+      </div>
+      <a href="{% url 'visits:list' %}" class="text-sm font-medium hidden sm:block" style="color:#C41717;">All visits -></a>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {% for visit in recent_visits %}
+      <a href="{{ visit.get_absolute_url }}" class="visit-photo-card scroll-reveal">
+        {% with visit.media.all|first as fm %}
+        {% if fm and fm.file %}
+        <img src="{{ fm.file.url }}" alt="{{ visit.title }}">
+        <div class="visit-overlay"></div>
+        {% else %}
+        <div class="absolute inset-0 flex items-center justify-center" style="background:linear-gradient(135deg,#FDECEC,#F7E1E1);">
+          <span class="font-bold opacity-10 text-7xl" style="color:#C41717;font-family:'Space Grotesk',sans-serif;">{{ visit.day_number }}</span>
+        </div>
+        <div class="visit-overlay" style="background:linear-gradient(to top,rgba(8,20,12,0.70) 0%,transparent 60%);"></div>
+        {% endif %}
+        {% endwith %}
+        <div class="absolute top-4 left-4">
+          <span class="px-2.5 py-1 rounded-lg text-xs font-bold text-white" style="background:rgba(219,26,26,0.88);font-family:'Space Grotesk',sans-serif;backdrop-filter:blur(8px);">Day {{ visit.day_number }}</span>
+        </div>
+        <div class="absolute top-4 right-4">
+          <span class="text-[10px] px-2 py-0.5 rounded text-white/70" style="background:rgba(8,20,12,0.65);backdrop-filter:blur(4px);">{{ visit.date|date:"d M Y" }}</span>
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 p-5">
+          {% with visit.villages.all as vlist %}{% if vlist %}
+          <div class="flex flex-wrap gap-1 mb-2">
+            {% for v in vlist %}<span class="text-[10px] px-2 py-0.5 rounded text-white/80" style="background:rgba(140,199,196,0.30);">{{ v.name }}</span>{% endfor %}
+          </div>
+          {% endif %}{% endwith %}
+          <h3 class="font-bold text-sm text-white leading-tight mb-1" style="font-family:'Space Grotesk',sans-serif;">{{ visit.title }}</h3>
+          <p class="text-xs line-clamp-2 mb-2" style="color:rgba(255,255,255,0.55);">{{ visit.summary }}</p>
+          <div class="text-[10px]" style="color:rgba(255,255,255,0.40);">{{ visit.attendance }} attended · {{ visit.survey_responses.count }} surveys</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MISSION â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<section class="py-20 bg-white">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col lg:flex-row items-start gap-16 lg:gap-24">
+      <div class="flex-1 scroll-reveal">
+        <p class="text-xs uppercase tracking-widest font-semibold mb-4" style="color:#6E8A93;font-family:'Space Grotesk',sans-serif;">How we did it</p>
+        <h2 class="text-3xl sm:text-4xl font-bold leading-tight mb-5" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Not a report written from a desk.</h2>
+        <p class="leading-relaxed mb-4 text-sm" style="color:#6E8A93;">
+          Under the guidance of <strong style="color:#1E5468;">{{ mentor_name }}</strong>
+          at <strong style="color:#1E5468;">{{ college_name }}</strong>,
+          the team visited homes, community halls, and spoke directly with farmers,
+          homemakers, daily-wage workers, and students about their digital lives.
+        </p>
+        <p class="leading-relaxed mb-7 text-sm" style="color:#6E8A93;">
+          The result is a ground-level picture of internet access, risk exposure, and
+          awareness that no remote survey could capture.
+        </p>
+        <a href="{% url 'core:about' %}" class="btn-ghost">Meet the team -></a>
+      </div>
+      <div class="flex-1 grid grid-cols-2 gap-3 scroll-reveal">
+        <div class="rounded-xl p-5" style="background:#FFF6F6;border:1px solid #E8DCDC;">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-4" style="background:#FDECEC;">
+            <svg class="w-4 h-4" style="color:#C41717;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          </div>
+          <div class="font-semibold text-sm mb-1" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Structured Survey</div>
+          <div class="text-xs leading-relaxed" style="color:#6E8A93;">Face-to-face questionnaire on internet use, fraud exposure, and OTP awareness</div>
+        </div>
+        <div class="rounded-xl p-5" style="background:#FFF6F6;border:1px solid #E8DCDC;">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-4" style="background:#FDECEC;">
+            <svg class="w-4 h-4" style="color:#C41717;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <div class="font-semibold text-sm mb-1" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Village Visits</div>
+          <div class="text-xs leading-relaxed" style="color:#6E8A93;">Door-to-door presence across Maharajupeta, Rajapulova, Jonnada, and Akulapeta</div>
+        </div>
+        <div class="rounded-xl p-5" style="background:#FFF6F6;border:1px solid #E8DCDC;">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-4" style="background:#FDECEC;">
+            <svg class="w-4 h-4" style="color:#C41717;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          </div>
+          <div class="font-semibold text-sm mb-1" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Data Analysis</div>
+          <div class="text-xs leading-relaxed" style="color:#6E8A93;">Village-level breakdowns, age and occupation trends, fraud pattern analysis</div>
+        </div>
+        <div class="rounded-xl p-5" style="background:#FFF6F6;border:1px solid #E8DCDC;">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center mb-4" style="background:#FDECEC;">
+            <svg class="w-4 h-4" style="color:#C41717;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+          </div>
+          <div class="font-semibold text-sm mb-1" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">AI Research Tool</div>
+          <div class="text-xs leading-relaxed" style="color:#6E8A93;">Query any aspect of the findings in plain language - local, private, no cloud</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• SURVEY CTA â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<section class="py-24" style="background:#1E5468;">
+  <div class="max-w-2xl mx-auto px-5 sm:px-8 text-center scroll-reveal">
+    <p class="text-xs uppercase tracking-widest font-semibold mb-4" style="color:#8CC7C4;font-family:'Space Grotesk',sans-serif;">Survey is open</p>
+    <h2 class="text-4xl sm:text-5xl font-bold mb-5" style="color:#FFFFFF;font-family:'Space Grotesk',sans-serif;">Your experience matters here.</h2>
+    <p class="text-base leading-relaxed mb-10" style="color:rgba(255,255,255,0.55);">
+      From one of our four survey villages? Five minutes with our questionnaire
+      helps build better cyber safety programs for your community.
+    </p>
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+      <a href="{% url 'surveys:form' %}"
+         class="group inline-flex items-center gap-2 px-9 py-4 font-bold rounded-xl text-sm text-white transition-all hover:-translate-y-0.5"
+         style="background:#C41717;font-family:'Space Grotesk',sans-serif;"
+         onmouseover="this.style.background='#A21010';this.style.boxShadow='0 8px 24px rgba(219,26,26,0.28)'"
+         onmouseout="this.style.background='#C41717';this.style.boxShadow='none'">
+        Take the Survey
+        <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+      </a>
+      <a href="{% url 'surveys:table' %}"
+         class="inline-flex items-center px-8 py-4 rounded-xl text-sm transition-all"
+         style="border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.55);"
+         onmouseover="this.style.borderColor='rgba(255,255,255,0.30)';this.style.color='rgba(255,255,255,0.85)'"
+         onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.55)'">
+        View all responses
+      </a>
+    </div>
+    <p class="mt-6 text-xs" style="color:rgba(255,255,255,0.25);">Anonymous. Academic use only. No personal identifiers collected.</p>
+  </div>
+</section>
+
+<!-- Lightbox -->
+<div id="lightbox" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden"
+     style="background:rgba(8,20,12,0.92);backdrop-filter:blur(16px);" onclick="closeLightbox()">
+  <button onclick="closeLightbox()" class="absolute top-5 right-5 w-9 h-9 rounded-full flex items-center justify-center text-sm z-10 bg-white/10 text-white border border-white/20">x</button>
+  <img id="lightbox-img" src="" alt="" class="max-h-[88vh] max-w-[90vw] object-contain rounded-xl shadow-2xl">
+  <p id="lightbox-caption" class="absolute bottom-6 left-0 right-0 text-center text-sm px-8" style="color:rgba(255,255,255,0.50);"></p>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openLightbox(src,caption){if(event)event.stopPropagation();document.getElementById('lightbox').classList.remove('hidden');document.getElementById('lightbox-img').src=src;document.getElementById('lightbox-caption').textContent=caption;document.body.style.overflow='hidden';}
+function closeLightbox(){document.getElementById('lightbox').classList.add('hidden');document.body.style.overflow='';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLightbox();});
+</script>
+{% endblock %}
+
+

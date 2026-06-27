@@ -1,0 +1,496 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Cyber Awareness Survey - CSP{% endblock %}
+
+{% block extra_head %}
+<style>
+/* Choice buttons */
+.choice-btn {
+  cursor: pointer;
+  border: 1.5px solid rgba(255,246,246,0.18);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255,246,246,0.06);
+  transition: all 0.18s ease;
+  user-select: none;
+}
+.choice-btn:hover {
+  border-color: rgba(140,199,196,0.34);
+  background: rgba(255,246,246,0.10);
+}
+.choice-btn.selected {
+  border-color: rgba(219,26,26,0.38);
+  background: rgba(255,246,246,0.14);
+}
+.choice-btn .dot {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid rgba(255,246,246,0.30);
+  flex-shrink: 0; transition: all 0.15s;
+  position: relative;
+}
+.choice-btn.selected .dot {
+  border-color: #C41717;
+  background: #C41717;
+}
+.choice-btn.selected .dot::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  background: white;
+  border-radius: 50%;
+}
+/* Checkbox buttons */
+.check-btn .box {
+  width: 18px; height: 18px; border-radius: 5px;
+  border: 2px solid rgba(255,246,246,0.30);
+  flex-shrink: 0; transition: all 0.15s;
+  position: relative;
+}
+.check-btn.selected .box {
+  border-color: #C41717;
+  background: #C41717;
+}
+.check-btn.selected .box::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+}
+/* Progress */
+.prog-dot.done  { background: rgba(255,246,246,0.20); border-color: rgba(219,26,26,0.28); color: #FFF6F6; }
+.prog-dot.now   { border-color: rgba(44,104,123,0.42); color: #FFF6F6; }
+/* Error text */
+.err-msg { display: none; color: #F87171; font-size: 12px; margin-top: 6px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen pt-20 pb-16" style="background: linear-gradient(180deg, #1E5468 0%, #365F6C 100%);">
+  <div class="max-w-xl mx-auto px-4 py-10">
+
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold mb-2" style="color: #FFF6F6;">Cyber Awareness Survey</h1>
+      <p class="text-sm max-w-md mx-auto" style="color: #D5E6EA;">
+        Your responses are anonymous and help us understand internet usage and cyber safety in our villages.
+      </p>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs" style="color: #D5E6EA;">Step <span id="current-step-label">1</span> of 3</span>
+        <span class="text-xs" style="color: #A4B9BD;" id="progress-label"></span>
+      </div>
+      <div class="h-1 rounded-full overflow-hidden" style="background: rgba(255,246,246,0.12);">
+        <div id="progress-bar" class="h-full rounded-full transition-all duration-500"
+             style="background: rgba(219,26,26,0.28); width:0%;"></div>
+      </div>
+      <div class="flex justify-between mt-3 text-xs">
+        <div class="flex items-center gap-1.5">
+          <div id="ps-1" class="prog-dot now w-6 h-6 rounded-full border-2 flex items-center justify-center font-bold">1</div>
+          <span style="color:#A4B9BD;">About You</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <div id="ps-2" class="prog-dot w-6 h-6 rounded-full border-2 flex items-center justify-center font-bold" style="border-color:rgba(255,246,246,0.18);color:#A4B9BD;">2</div>
+          <span style="color:#A4B9BD;">Internet</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <div id="ps-3" class="prog-dot w-6 h-6 rounded-full border-2 flex items-center justify-center font-bold" style="border-color:rgba(255,246,246,0.18);color:#A4B9BD;">3</div>
+          <span style="color:#A4B9BD;">Awareness</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <form id="survey-form" method="post">
+      {% csrf_token %}
+
+      <!-- STEP 1: About You -->
+      <div id="step-1" class="space-y-8 rounded-2xl p-6" style="background:#365F6C; border:1px solid rgba(219,26,26,0.18); box-shadow:0 12px 32px rgba(20,34,43,0.12);">
+
+        <div class="flex items-center gap-2 pb-4" style="border-bottom:1px solid rgba(255,255,255,0.06);">
+          <span class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold"
+                style="background:rgba(255,246,246,0.14);color:#FFF6F6;">1</span>
+          <span class="font-semibold" style="color:#FFF6F6;">About You</span>
+        </div>
+
+        <!-- Visit -->
+        <div>
+          <label class="block text-sm font-medium mb-2" style="color:#D5E6EA;">
+            Field Visit <span class="text-xs ml-1" style="color:#A4B9BD;">(select to filter village)</span>
+          </label>
+          <select name="visit" id="visit-select" onchange="filterByVisit(this.value)"
+                  class="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-colors"
+                  style="background:#466A75;border:1.5px solid rgba(255,246,246,0.16);color:#D5E6EA;">
+            <option value="">- Choose the visit day -</option>
+            {% for v in form.fields.visit.queryset %}
+            <option value="{{ v.pk }}">Day {{ v.day_number }} - {{ v.date|date:"M d, Y" }}
+              ({% for vg in v.villages.all %}{{ vg.name }}{% if not forloop.last %}, {% endif %}{% endfor %})
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Village -->
+        <div>
+          <label class="block text-sm font-medium mb-3" style="color:#D5E6EA;">
+            Village <span style="color:#F87171;">*</span>
+          </label>
+          <input type="hidden" data-field="village" data-required name="village">
+          <div id="village-grid" class="grid grid-cols-2 gap-2.5">
+            {% for village in form.village.field.queryset %}
+            <div class="choice-btn" data-group="village" data-village-id="{{ village.pk }}"
+                 onclick="selectRadio('village','{{ village.pk }}',this)">
+              <div class="dot"></div>
+              <span class="text-sm" style="color:#D5E6EA;">{{ village.name }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          <div id="err-village" class="err-msg">Please select your village.</div>
+        </div>
+
+        <!-- Age Group -->
+        <div>
+          <label class="block text-sm font-medium mb-3" style="color:#D5E6EA;">
+            Age Group <span style="color:#F87171;">*</span>
+          </label>
+          <input type="hidden" data-field="age_group" data-required name="age_group">
+          <div class="grid grid-cols-3 gap-2">
+            {% for value, label in form.fields.age_group.choices %}
+            <div class="choice-btn" data-group="age_group"
+                 onclick="selectRadio('age_group','{{ value }}',this)">
+              <div class="dot"></div>
+              <span class="text-xs" style="color:#D5E6EA;">{{ label }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          <div id="err-age_group" class="err-msg">Please select your age group.</div>
+        </div>
+
+        <!-- Education -->
+        <div>
+          <label class="block text-sm font-medium mb-3" style="color:#D5E6EA;">
+            Education <span style="color:#F87171;">*</span>
+          </label>
+          <select name="education" required
+                  class="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-colors"
+                  style="background:#466A75;border:1.5px solid rgba(255,246,246,0.16);color:#D5E6EA;">
+            <option value="">- Select education level -</option>
+            {% for value, label in form.fields.education.choices %}
+            <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+          <div id="err-education" class="err-msg">Please select your education level.</div>
+        </div>
+
+        <!-- Occupation -->
+        <div>
+          <label class="block text-sm font-medium mb-3" style="color:#D5E6EA;">
+            Occupation <span style="color:#F87171;">*</span>
+          </label>
+          <input type="hidden" data-field="occupation" data-required name="occupation">
+          <div class="grid grid-cols-2 gap-2">
+            {% for value, label in form.fields.occupation.choices %}
+            <div class="choice-btn" data-group="occupation"
+                 onclick="selectRadio('occupation','{{ value }}',this);document.getElementById('occ-other').style.display='{{ value }}'==='other'?'block':'none'">
+              <div class="dot"></div>
+              <span class="text-xs" style="color:#D5E6EA;">{{ label }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          <input type="text" name="occupation_other" id="occ-other"
+                 placeholder="Please specify..."
+                 class="mt-3 w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none"
+                 style="display:none;background:#2C2218;border:1.5px solid rgba(255,246,246,0.14);color:#D5E6EA;">
+          <div id="err-occupation" class="err-msg">Please select your occupation.</div>
+        </div>
+
+        <!-- Internet Yes/No -->
+        <div>
+          <label class="block text-sm font-medium mb-3" style="color:#D5E6EA;">
+            Do you use the Internet? <span style="color:#F87171;">*</span>
+          </label>
+          <input type="hidden" data-field="uses_internet" data-required name="uses_internet">
+          <div class="grid grid-cols-2 gap-3">
+            <div class="choice-btn" data-group="uses_internet"
+                 onclick="selectRadio('uses_internet','true',this)">
+              <div class="dot"></div>
+              <span class="text-sm" style="color:#D5E6EA;">Yes</span>
+            </div>
+            <div class="choice-btn" data-group="uses_internet"
+                 onclick="selectRadio('uses_internet','false',this)">
+              <div class="dot"></div>
+              <span class="text-sm" style="color:#D5E6EA;">No</span>
+            </div>
+          </div>
+          <div id="err-uses_internet" class="err-msg">Please answer this question.</div>
+        </div>
+
+      </div><!-- /step-1 -->
+
+      <!-- STEP 2: Internet Usage -->
+      <div id="step-2" class="space-y-8 rounded-2xl p-6" style="display:none;background:#365F6C;border:1px solid rgba(219,26,26,0.18);box-shadow:0 12px 32px rgba(20,34,43,0.12);">
+
+        <div class="flex items-center gap-2 pb-4" style="border-bottom:1px solid rgba(255,255,255,0.06);">
+          <span class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold"
+                style="background:rgba(255,246,246,0.14);color:#FFF6F6;">2</span>
+          <span class="font-semibold" style="color:#FFF6F6;">Internet Usage</span>
+        </div>
+
+        <!-- Devices -->
+        <div>
+          <label class="block text-sm font-medium mb-3" style="color:#D5E6EA;">
+            Which device(s) do you use? <span style="color:#F87171;">*</span>
+          </label>
+          <input type="hidden" data-field="devices" data-required name="devices" value="[]">
+          <div class="grid grid-cols-2 gap-2">
+            {% for value, label in form.fields.devices.choices %}
+            <div class="choice-btn check-btn" data-group="devices"
+                 onclick="toggleCheckbox('devices','{{ value }}',this)">
+              <div class="box"></div>
+              <span class="text-sm" style="color:#D5E6EA;">{{ label }}</span>
+            </div>
+            {% endfor %}
+          </div>
+            <input type="text" name="device_other" placeholder="Other device..."
+                 class="mt-3 w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none"
+                 style="background:#2C2218;border:1.5px solid rgba(255,246,246,0.14);color:#D5E6EA;">
+          <div id="err-devices" class="err-msg">Please select at least one device.</div>
+        </div>
+
+        <!-- Connection -->
+        <div>
+          <label class="block text-sm font-medium mb-3" style="color:#D5E6EA;">
+            Main type of internet connection? <span style="color:#F87171;">*</span>
+          </label>
+          <input type="hidden" data-field="connection_type" data-required name="connection_type">
+          <div class="space-y-2">
+            {% for value, label in form.fields.connection_type.choices %}
+            <div class="choice-btn" data-group="connection_type"
+                 onclick="selectRadio('connection_type','{{ value }}',this)">
+              <div class="dot"></div>
+              <span class="text-sm" style="color:#D5E6EA;">{{ label }}</span>
+            </div>
+            {% endfor %}
+          </div>
+            <input type="text" name="connection_other" placeholder="Other connection type..."
+                 class="mt-3 w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none"
+                 style="background:#2C2218;border:1.5px solid rgba(255,246,246,0.14);color:#D5E6EA;">
+          <div id="err-connection_type" class="err-msg">Please select connection type.</div>
+        </div>
+
+        <!-- Hours -->
+        <div>
+          <label class="block text-sm font-medium mb-3" style="color:#D5E6EA;">
+            How many hours per day do you use the Internet? <span style="color:#F87171;">*</span>
+          </label>
+          <input type="hidden" data-field="hours_per_day" data-required name="hours_per_day">
+          <div class="grid grid-cols-2 gap-2">
+            {% for value, label in form.fields.hours_per_day.choices %}
+            <div class="choice-btn" data-group="hours_per_day"
+                 onclick="selectRadio('hours_per_day','{{ value }}',this)">
+              <div class="dot"></div>
+              <span class="text-sm" style="color:#D5E6EA;">{{ label }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          <div id="err-hours_per_day" class="err-msg">Please select daily usage hours.</div>
+        </div>
+
+        <!-- Purposes -->
+        <div>
+          <label class="block text-sm font-medium mb-1" style="color:#D5E6EA;">
+            What do you mainly use the Internet for?
+          </label>
+          <p class="text-xs mb-3" style="color:#D5E6EA;">Select all that apply.</p>
+          <input type="hidden" data-field="internet_purposes" name="internet_purposes" value="[]">
+          <div class="grid grid-cols-2 gap-2">
+            {% for value, label in form.fields.internet_purposes.choices %}
+            <div class="choice-btn check-btn" data-group="internet_purposes"
+                 onclick="toggleCheckbox('internet_purposes','{{ value }}',this)">
+              <div class="box"></div>
+              <span class="text-xs" style="color:#D5E6EA;">{{ label }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          <input type="text" name="purpose_other" placeholder="Other purpose..."
+                 class="mt-3 w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none"
+                 style="background:#2C2218;border:1.5px solid rgba(255,246,246,0.14);color:#D5E6EA;">
+        </div>
+
+      </div><!-- /step-2 -->
+
+      <!-- STEP 3: Cyber Awareness -->
+      <div id="step-3" class="space-y-8 rounded-2xl p-6" style="display:none;background:#365F6C;border:1px solid rgba(219,26,26,0.18);box-shadow:0 12px 32px rgba(20,34,43,0.12);">
+
+        <div class="flex items-center gap-2 pb-4" style="border-bottom:1px solid rgba(255,255,255,0.06);">
+          <span class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold"
+                style="background:rgba(255,246,246,0.14);color:#FFF6F6;">3</span>
+          <span class="font-semibold" style="color:#FFF6F6;">Cyber Awareness</span>
+        </div>
+
+        <!-- Awareness Rating -->
+        <div>
+          <label class="block text-sm font-medium mb-3" style="color:#D5E6EA;">
+            How would you rate your awareness about cyber safety? <span style="color:#F87171;">*</span>
+          </label>
+          <input type="hidden" data-field="cyber_awareness_rating" data-required name="cyber_awareness_rating">
+          <div class="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
+            {% for value, label in form.fields.cyber_awareness_rating.choices %}
+            <div class="choice-btn" data-group="cyber_awareness_rating"
+                 onclick="selectRadio('cyber_awareness_rating','{{ value }}',this)">
+              <div class="dot"></div>
+              <span class="text-xs" style="color:#D5E6EA;">{{ label }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          <div id="err-cyber_awareness_rating" class="err-msg">Please rate your awareness.</div>
+        </div>
+
+        <!-- OTP -->
+        <div>
+          <label class="block text-sm font-medium mb-3" style="color:#D5E6EA;">
+            Do you know that you should <strong style="color:#FFF6F6;">never share your OTP</strong> with anyone,
+            even if they claim to be from a bank or government office?
+            <span style="color:#F87171;">*</span>
+          </label>
+          <input type="hidden" data-field="knows_otp_rule" data-required name="knows_otp_rule">
+          <div class="space-y-2">
+            {% for value, label in form.fields.knows_otp_rule.choices %}
+            <div class="choice-btn" data-group="knows_otp_rule"
+                 onclick="selectRadio('knows_otp_rule','{{ value }}',this)">
+              <div class="dot"></div>
+              <span class="text-sm" style="color:#D5E6EA;">{{ label }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          <div id="err-knows_otp_rule" class="err-msg">Please answer this question.</div>
+        </div>
+
+        <!-- Fraud -->
+        <div>
+          <label class="block text-sm font-medium mb-1" style="color:#D5E6EA;">
+            Have you ever faced any online fraud or suspicious activity?
+            <span style="color:#F87171;">*</span>
+          </label>
+          <p class="text-xs mb-3" style="color:#D5E6EA;">Fake calls, phishing messages, OTP fraud, account hacking, money loss, etc.</p>
+          <input type="hidden" data-field="faced_fraud" data-required name="faced_fraud">
+          <div class="grid grid-cols-3 gap-2">
+            {% for value, label in form.fields.faced_fraud.choices %}
+            <div class="choice-btn" data-group="faced_fraud"
+                 onclick="selectRadio('faced_fraud','{{ value }}',this)">
+              <div class="dot"></div>
+              <span class="text-sm" style="color:#D5E6EA;">{{ label }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          <div id="err-faced_fraud" class="err-msg">Please answer this question.</div>
+        </div>
+
+        <!-- Fraud description (shown when "yes") -->
+        <div id="fraud-desc-section" style="display:none;">
+          <label class="block text-sm font-medium mb-2" style="color:#D5E6EA;">
+            If yes, briefly describe what happened:
+            <span class="font-normal" style="color:#D5E6EA;">(optional)</span>
+          </label>
+          <textarea name="fraud_description" rows="4"
+                    placeholder="Describe briefly what happened..."
+                    class="w-full rounded-xl px-4 py-3 text-sm resize-none focus:outline-none"
+                    style="background:#466A75;border:1.5px solid rgba(255,246,246,0.16);color:#D5E6EA;"></textarea>
+        </div>
+
+        <!-- Privacy note -->
+        <div class="rounded-xl px-5 py-4 text-xs" style="background:rgba(140,199,196,0.05);border:1px solid rgba(140,199,196,0.18);color:#6EE7B7;">
+          Your responses are completely anonymous and used only for academic research.
+        </div>
+
+      </div><!-- /step-3 -->
+
+      <!-- Navigation -->
+      <div class="flex items-center justify-between mt-6">
+        <button type="button" id="btn-prev" onclick="prevStep()"
+                class="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium transition-all"
+                style="display:none; border:1px solid rgba(255,246,246,0.14); color:#D5E6EA;">
+          <- Back
+        </button>
+        <div></div>
+
+        <button type="button" id="btn-next" onclick="nextStep()"
+                class="inline-flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-semibold transition-all"
+                style="background:#C41717; color:#FFF6F6;">
+          Continue ->
+        </button>
+
+        <button type="submit" id="btn-submit"
+                class="inline-flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-semibold transition-all"
+                style="display:none; background:#C41717; color:#FFF6F6;">
+          Submit Survey
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var VISITS_DATA = {{ visits_json|safe }};
+
+window.filterByVisit = function(visitPk) {
+  var allBtns = document.querySelectorAll('[data-group="village"]');
+  var hiddenVillage = document.querySelector('input[data-field="village"]');
+
+  if (!visitPk) {
+    // No visit selected - show all villages
+    allBtns.forEach(function(b) { b.style.display = ''; });
+    return;
+  }
+
+  var visit = null;
+  for (var i = 0; i < VISITS_DATA.length; i++) {
+    if (String(VISITS_DATA[i].pk) === String(visitPk)) { visit = VISITS_DATA[i]; break; }
+  }
+  if (!visit) return;
+
+  var allowedIds = visit.villages.map(function(v) { return String(v.id); });
+
+  // Show only this visit's villages, hide others + deselect hidden ones
+  var currentVal = hiddenVillage ? hiddenVillage.value : '';
+  if (currentVal && allowedIds.indexOf(currentVal) === -1) {
+    if (hiddenVillage) hiddenVillage.value = '';
+    allBtns.forEach(function(b) { b.classList.remove('selected'); });
+  }
+
+  allBtns.forEach(function(b) {
+    var vid = b.dataset.villageId;
+    if (allowedIds.indexOf(vid) !== -1) {
+      b.style.display = '';
+    } else {
+      b.style.display = 'none';
+      b.classList.remove('selected');
+    }
+  });
+
+  // Auto-select if exactly one village for this visit
+  if (visit.villages.length === 1) {
+    var onlyId = String(visit.villages[0].id);
+    var onlyBtn = document.querySelector('[data-group="village"][data-village-id="' + onlyId + '"]');
+    if (onlyBtn) window.selectRadio('village', onlyId, onlyBtn);
+  }
+};
+</script>
+<script src="{% static 'js/survey.js' %}"></script>
+{% endblock %}
+
+

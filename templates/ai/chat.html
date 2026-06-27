@@ -1,0 +1,305 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block title %}AI Research Assistant - CSP{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* Full-height chat layout: outer wrapper fills viewport, shell is a flex column */
+  .chat-outer {
+    height: 100vh;
+    padding-top: 64px; /* navbar height */
+    display: flex;
+    flex-direction: column;
+  }
+  .chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 1rem 1rem 1rem;
+    min-height: 0;
+  }
+  .chat-shell {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background: #FFFFFF;
+    border: 1px solid rgba(30,84,104,0.18);
+    border-radius: 24px;
+    box-shadow: 0 12px 40px rgba(30,84,104,0.10);
+    overflow: hidden;
+  }
+  .chat-header {
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(30,84,104,0.10);
+    background: rgba(255,255,255,0.96);
+    backdrop-filter: blur(10px);
+    padding: 14px 20px;
+  }
+  .chat-scroll {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    background: #FFF6F6;
+    scroll-behavior: smooth;
+  }
+  .chat-scroll::-webkit-scrollbar { width: 4px; }
+  .chat-scroll::-webkit-scrollbar-thumb { background: rgba(30,84,104,0.15); border-radius: 99px; }
+  .chat-input-bar {
+    flex-shrink: 0;
+    border-top: 1px solid rgba(30,84,104,0.10);
+    background: rgba(255,255,255,0.98);
+    backdrop-filter: blur(10px);
+    padding: 14px 20px;
+  }
+  .chat-input-shell {
+    background: #FFFFFF;
+    border: 1.5px solid rgba(30,84,104,0.18);
+    border-radius: 16px;
+    transition: border-color 0.2s;
+  }
+  .chat-input-shell:focus-within {
+    border-color: rgba(196,23,23,0.38);
+    box-shadow: 0 0 0 3px rgba(196,23,23,0.07);
+  }
+  .chat-bubble-user {
+    background: rgba(196,23,23,0.09);
+    border: 1px solid rgba(196,23,23,0.18);
+    border-radius: 18px 18px 4px 18px;
+    color: #1E5468;
+  }
+  .chat-bubble-ai {
+    background: #FFFFFF;
+    border: 1px solid rgba(30,84,104,0.14);
+    border-radius: 18px 18px 18px 4px;
+    color: #3A606E;
+  }
+  /* AI avatar icon */
+  .ai-avatar {
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #1E5468, #3B7B77);
+    box-shadow: 0 2px 8px rgba(30,84,104,0.22);
+  }
+  .ai-avatar-lg {
+    width: 52px; height: 52px;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #1E5468, #3B7B77);
+    box-shadow: 0 4px 16px rgba(30,84,104,0.22);
+    margin: 0 auto 20px;
+  }
+  /* Typing dots — dark on light bg */
+  .typing-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(30,84,104,0.35);
+    animation: typingBounce 1.2s infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.18s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.36s; }
+  @keyframes typingBounce {
+    0%,60%,100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+  }
+  .message-appear { animation: msgIn 0.28s ease forwards; opacity: 0; }
+  @keyframes msgIn {
+    from { opacity:0; transform: translateY(8px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+  #chat-input { resize: none; overflow: hidden; min-height: 40px; max-height: 180px; }
+  .suggestion-chip {
+    border: 1px solid rgba(30,84,104,0.14);
+    background: #FFFFFF;
+    border-radius: 12px;
+    transition: all 0.2s;
+  }
+  .suggestion-chip:hover {
+    background: rgba(30,84,104,0.05);
+    border-color: rgba(196,23,23,0.24);
+  }
+  .ai-prose p { margin-bottom: 0.6em; }
+  .ai-prose strong { color: #1E5468; }
+  .ai-prose code {
+    background: rgba(30,84,104,0.07);
+    border: 1px solid rgba(30,84,104,0.14);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.83em;
+  }
+  .ai-prose ul { list-style: disc; padding-left: 1.25rem; }
+  .ai-prose ol { list-style: decimal; padding-left: 1.25rem; }
+  .ai-prose li { margin-bottom: 0.2rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-outer" x-data="aiChat()">
+  <div class="chat-container">
+  <div class="chat-shell">
+
+  <!-- Header -->
+  <div class="chat-header flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <!-- AI avatar icon -->
+      <div class="ai-avatar">
+        <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="font-semibold text-sm" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">CSP Research Assistant</h1>
+        <div class="flex items-center gap-1.5 mt-0.5">
+          <span class="w-1.5 h-1.5 rounded-full" style="background:#8CC7C4;"></span>
+          <span class="text-xs" style="color:#6E8A93;">Ollama · complete project context · live data</span>
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button @click="clearChat()"
+              class="px-3 py-1.5 text-xs rounded-lg border transition-all"
+              style="color:#6E8A93;border-color:rgba(30,84,104,0.16);"
+              onmouseover="this.style.background='rgba(30,84,104,0.06)'"
+              onmouseout="this.style.background='transparent'">
+        Clear
+      </button>
+      {% if user.is_staff %}
+      <button @click="rebuildKB()" :disabled="rebuilding"
+              class="px-3 py-1.5 text-xs rounded-lg border transition-all disabled:opacity-40"
+              style="color:#C41717;border-color:rgba(196,23,23,0.22);"
+              onmouseover="this.style.background='rgba(196,23,23,0.07)'"
+              onmouseout="this.style.background='transparent'">
+        <span x-show="!rebuilding">Rebuild KB</span>
+        <span x-show="rebuilding">Building…</span>
+      </button>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Scrollable chat body -->
+  <div class="chat-scroll" id="chat-scroll">
+    <div class="px-5 py-8 space-y-5 max-w-3xl mx-auto">
+
+      <!-- Welcome state -->
+      <div x-show="messages.length === 0" class="text-center py-14">
+        <div class="ai-avatar-lg">
+          <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+        </div>
+        <h2 class="text-lg font-semibold mb-2" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Ask about the project</h2>
+        <p class="text-sm max-w-sm mx-auto mb-8" style="color:#6E8A93;">
+          Full context on every field visit, village profile, team member, and survey response.
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-2xl mx-auto text-left">
+          <template x-for="q in suggested" :key="q">
+            <button type="button" @click="sendMessage(q)"
+                    class="suggestion-chip px-4 py-3 text-left">
+              <span class="text-xs" style="color:#3A606E;" x-text="q"></span>
+            </button>
+          </template>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <template x-for="(msg, idx) in messages" :key="idx">
+        <div :class="msg.role === 'user' ? 'flex justify-end' : 'flex justify-start items-start gap-3'" class="message-appear">
+
+          <!-- AI avatar (only for AI messages) -->
+          <div x-show="msg.role === 'ai'" class="ai-avatar mt-0.5">
+            <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            </svg>
+          </div>
+
+          <!-- Bubble content -->
+          <div :class="msg.role === 'user' ? 'max-w-[78%]' : 'flex-1 min-w-0'">
+            <!-- User bubble -->
+            <div x-show="msg.role === 'user'"
+                 class="chat-bubble-user px-5 py-3 text-sm leading-relaxed"
+                 x-text="msg.content">
+            </div>
+            <!-- AI bubble -->
+            <div x-show="msg.role === 'ai'">
+              <div class="chat-bubble-ai px-5 py-4 text-sm leading-relaxed ai-prose"
+                   x-html="msg.html || msg.content">
+              </div>
+              <div x-show="msg.sources && msg.sources.length > 0"
+                   class="mt-2 flex flex-wrap items-center gap-1.5">
+                <span class="text-[10px]" style="color:#6E8A93;">Sources:</span>
+                <template x-for="src in msg.sources" :key="src">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono"
+                        style="background:#FFFFFF;border:1px solid rgba(30,84,104,0.14);color:#6E8A93;"
+                        x-text="src"></span>
+                </template>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </template>
+
+      <!-- Typing indicator -->
+      <div x-show="typing" class="flex justify-start items-start gap-3 message-appear">
+        <div class="ai-avatar mt-0.5">
+          <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+        </div>
+        <div class="chat-bubble-ai px-5 py-4 flex items-center gap-2">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Input bar -->
+  <div class="chat-input-bar">
+    <div class="flex items-end gap-3">
+      <div class="chat-input-shell flex-1 px-4 py-3">
+        <textarea id="chat-input" x-model="inputText"
+                  placeholder="Ask about survey data, villages, field visits, team, cyber awareness…"
+                  @keydown="handleKey($event)"
+                  @input="autoResize($event.target)"
+                  class="w-full bg-transparent text-sm focus:outline-none resize-none"
+                  style="color:#1E5468;"
+                  rows="1"></textarea>
+      </div>
+      <button @click="sendMessage()" :disabled="!inputText.trim() || typing"
+              class="w-11 h-11 rounded-xl flex items-center justify-center transition-all shrink-0 disabled:opacity-30 disabled:cursor-not-allowed"
+              style="background:#C41717;"
+              onmouseover="if(!this.disabled)this.style.background='#D83434'"
+              onmouseout="this.style.background='#C41717'">
+        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+        </svg>
+      </button>
+    </div>
+    <p class="text-[11px] mt-2 text-center" style="color:#A4B9BD;">
+      Shift+Enter for new line · Enter to send · Verify critical data against source records
+    </p>
+  </div>
+
+  </div><!-- /chat-shell -->
+  </div><!-- /chat-container -->
+</div><!-- /chat-outer -->
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/ai-chat.js"></script>
+{% endblock %}
+
+

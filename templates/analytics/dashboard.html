@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Analytics Dashboard – CSP Cyber Awareness{% endblock %}
+
+{% block extra_head %}
+<!-- ECharts -->
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<!-- D3 -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  .chart-card { transition: all 0.3s ease; }
+  .chart-card:hover { border-color: rgba(30,84,104,0.28); box-shadow: 0 12px 32px rgba(30,84,104,0.10); }
+  .insight-card { animation: slideUp 0.5s ease forwards; opacity: 0; }
+  @keyframes slideUp { to { opacity:1; transform: translateY(0); } from { opacity:0; transform: translateY(20px); } }
+  .filter-btn { background:#FFFFFF; border:1px solid rgba(30,84,104,0.16); color:#6E8A93; transition:all 0.2s; }
+  .filter-btn.active { background: rgba(196,23,23,0.10) !important; border-color: rgba(196,23,23,0.32) !important; color: #C41717 !important; }
+  .dash-control { background:#FFFFFF; border:1px solid rgba(30,84,104,0.18); color:#1E5468; }
+  .dash-control:focus { outline:none; border-color:rgba(196,23,23,0.35); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pt-20 pb-32">
+
+  <!-- Page Header -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div>
+        <div class="text-xs uppercase tracking-widest font-semibold mb-2" style="color:#C41717;font-family:'Space Grotesk',sans-serif;">Data Intelligence</div>
+        <h1 class="text-4xl font-bold" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Analytics Dashboard</h1>
+        <p class="mt-2" style="color:#6E8A93;">
+          {{ total_responses }} survey responses · Cross-filter any chart to update all others
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Village filter -->
+        <select id="village-filter" onchange="loadAnalytics(this.value)"
+                class="dash-control rounded-xl px-4 py-2.5 text-sm transition-colors">
+          <option value="all">All Villages</option>
+          {% for v in villages %}
+          <option value="{{ v.slug }}">{{ v.name }}</option>
+          {% endfor %}
+        </select>
+        <button onclick="refreshAnalytics()"
+                class="dash-control px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-2 hover:bg-surface-50">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Refresh
+        </button>
+        <a href="{% url 'reports:pdf' %}"
+           class="px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2"
+           style="background:rgba(196,23,23,0.08);border:1px solid rgba(196,23,23,0.26);color:#C41717;">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Export PDF
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auto Insights Banner -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 mb-10">
+    <div id="insights-container" class="space-y-3">
+      <div class="text-sm flex items-center gap-2" style="color:#6E8A93;">
+        <div class="w-4 h-4 border-2 rounded-full animate-spin" style="border-color:rgba(196,23,23,0.20);border-top-color:#C41717;"></div>
+        Loading AI insights…
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Metric Cards -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 mb-10">
+    <div id="metric-cards" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="glass-card p-5 rounded-2xl text-center" style="border:1px solid rgba(30,84,104,0.15);">
+        <div class="text-3xl font-black metric-val" id="m-total" style="color:#1E5468;">—</div>
+        <div class="text-xs mt-1" style="color:#6E8A93;">Total Responses</div>
+      </div>
+      <div class="glass-card p-5 rounded-2xl text-center" style="border:1px solid rgba(30,84,104,0.15);">
+        <div class="text-3xl font-black metric-val" id="m-internet" style="color:#3B7B77;">—</div>
+        <div class="text-xs mt-1" style="color:#6E8A93;">Internet Users</div>
+      </div>
+      <div class="glass-card p-5 rounded-2xl text-center" style="border:1px solid rgba(30,84,104,0.15);">
+        <div class="text-3xl font-black metric-val" id="m-fraud" style="color:#C41717;">—</div>
+        <div class="text-xs mt-1" style="color:#6E8A93;">Fraud Cases</div>
+      </div>
+      <div class="glass-card p-5 rounded-2xl text-center" style="border:1px solid rgba(30,84,104,0.15);">
+        <div class="text-3xl font-black metric-val" id="m-otp" style="color:#3B7B77;">—</div>
+        <div class="text-xs mt-1" style="color:#6E8A93;">OTP Aware</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Grid -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
+
+    <!-- Row 1: Village comparison + Age vs Internet -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="chart-card glass-card rounded-2xl p-6" style="border:1px solid rgba(30,84,104,0.14);">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-semibold" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Village Comparison</h3>
+            <p class="text-xs" style="color:#6E8A93;">Survey responses &amp; internet usage by village</p>
+          </div>
+        </div>
+        <div id="chart-village" class="h-72"></div>
+      </div>
+      <div class="chart-card glass-card rounded-2xl p-6" style="border:1px solid rgba(30,84,104,0.14);">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-semibold" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Age Group vs Internet Usage</h3>
+            <p class="text-xs" style="color:#6E8A93;">Stacked bar comparing usage across age groups</p>
+          </div>
+        </div>
+        <div id="chart-age-internet" class="h-72"></div>
+      </div>
+    </div>
+
+    <!-- Row 2: Education vs Awareness + Device Distribution -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="chart-card glass-card rounded-2xl p-6 lg:col-span-2" style="border:1px solid rgba(30,84,104,0.14);">
+        <h3 class="font-semibold mb-1" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Education vs Cyber Awareness</h3>
+        <p class="text-xs mb-4" style="color:#6E8A93;">Average awareness score by education level (1=Very Low, 5=Very High)</p>
+        <div id="chart-edu-awareness" class="h-72"></div>
+      </div>
+      <div class="chart-card glass-card rounded-2xl p-6" style="border:1px solid rgba(30,84,104,0.14);">
+        <h3 class="font-semibold mb-1" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Device Usage</h3>
+        <p class="text-xs mb-4" style="color:#6E8A93;">Devices used for internet access</p>
+        <div id="chart-devices" class="h-72"></div>
+      </div>
+    </div>
+
+    <!-- Row 3: Internet Purposes + Connection Types + Hours -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div class="chart-card glass-card rounded-2xl p-6" style="border:1px solid rgba(30,84,104,0.14);">
+        <h3 class="font-semibold mb-1" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Internet Purposes</h3>
+        <p class="text-xs mb-4" style="color:#6E8A93;">What people use the internet for</p>
+        <div id="chart-purposes" class="h-64"></div>
+      </div>
+      <div class="chart-card glass-card rounded-2xl p-6" style="border:1px solid rgba(30,84,104,0.14);">
+        <h3 class="font-semibold mb-1" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Connection Types</h3>
+        <p class="text-xs mb-4" style="color:#6E8A93;">Primary internet connection method</p>
+        <div id="chart-connection" class="h-64"></div>
+      </div>
+      <div class="chart-card glass-card rounded-2xl p-6" style="border:1px solid rgba(30,84,104,0.14);">
+        <h3 class="font-semibold mb-1" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Daily Usage Hours</h3>
+        <p class="text-xs mb-4" style="color:#6E8A93;">Time spent online per day</p>
+        <div id="chart-hours" class="h-64"></div>
+      </div>
+    </div>
+
+    <!-- Row 4: Fraud by Village + OTP Awareness -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="chart-card glass-card rounded-2xl p-6" style="border:1px solid rgba(30,84,104,0.14);">
+        <h3 class="font-semibold mb-1" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Fraud Experience by Village</h3>
+        <p class="text-xs mb-4" style="color:#6E8A93;">Stacked bar showing fraud cases across villages</p>
+        <div id="chart-fraud" class="h-64"></div>
+      </div>
+      <div class="chart-card glass-card rounded-2xl p-6" style="border:1px solid rgba(30,84,104,0.14);">
+        <h3 class="font-semibold mb-1" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">OTP Awareness</h3>
+        <p class="text-xs mb-4" style="color:#6E8A93;">Knowledge about OTP sharing risks</p>
+        <div id="chart-otp" class="h-64"></div>
+      </div>
+    </div>
+
+    <!-- Row 5: Daily Trend + Heatmap -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="chart-card glass-card rounded-2xl p-6 lg:col-span-2" style="border:1px solid rgba(30,84,104,0.14);">
+        <h3 class="font-semibold mb-1" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Daily Submission Trend</h3>
+        <p class="text-xs mb-4" style="color:#6E8A93;">Survey responses over time</p>
+        <div id="chart-trend" class="h-56"></div>
+      </div>
+      <div class="chart-card glass-card rounded-2xl p-6" style="border:1px solid rgba(30,84,104,0.14);">
+        <h3 class="font-semibold mb-1" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Awareness Heatmap</h3>
+        <p class="text-xs mb-4" style="color:#6E8A93;">Village × Age Group awareness matrix</p>
+        <div id="chart-heatmap" class="h-56"></div>
+      </div>
+    </div>
+
+    <!-- Row 6: Occupation Analysis -->
+    <div class="chart-card glass-card rounded-2xl p-6" style="border:1px solid rgba(30,84,104,0.14);">
+      <h3 class="font-semibold mb-1" style="color:#1E5468;font-family:'Space Grotesk',sans-serif;">Occupation vs Awareness &amp; Internet Usage</h3>
+      <p class="text-xs mb-4" style="color:#6E8A93;">Bubble chart: size = count, x = awareness score, y = internet %</p>
+      <div id="chart-occupation" class="h-80"></div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/analytics.js"></script>
+<script>
+  // Bootstrap analytics on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    loadAnalytics('all');
+    loadInsights();
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,72 @@
+﻿{% load static %}
+<footer class="mt-24" style="background:#1E5468;">
+
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-16">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+      <div class="lg:col-span-2">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style="background:#C41717;">
+            <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="font-semibold text-sm" style="color:#FFF6F6;font-family:'Space Grotesk',sans-serif;">CSP Cyber Awareness Portal</div>
+            <div class="text-xs" style="color:#8CC7C4;">Community Service Project</div>
+          </div>
+        </div>
+        <p class="text-sm leading-relaxed max-w-xs" style="color:#D5E6EA;">
+          A field research initiative documenting digital access, fraud exposure, and cyber
+          safety awareness across {{ total_villages|default:"4" }} villages in Vizianagaram
+          district, Andhra Pradesh.
+        </p>
+        <div class="mt-5 text-sm" style="color:#D5E6EA;">
+          Guided by <span style="color:#FFF6F6;">{{ mentor_name }}</span>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="text-xs font-semibold uppercase tracking-widest mb-5" style="color:#8CC7C4;font-family:'Space Grotesk',sans-serif;">Explore</h4>
+        <ul class="space-y-2.5">
+          <li><a href="{% url 'core:about' %}"          class="text-sm transition-colors" style="color:#D5E6EA;" onmouseover="this.style.color='#FFF6F6'" onmouseout="this.style.color='#D5E6EA'">About the Project</a></li>
+          <li><a href="{% url 'villages:list' %}"       class="text-sm transition-colors" style="color:#D5E6EA;" onmouseover="this.style.color='#FFF6F6'" onmouseout="this.style.color='#D5E6EA'">Villages</a></li>
+          <li><a href="{% url 'visits:list' %}"         class="text-sm transition-colors" style="color:#D5E6EA;" onmouseover="this.style.color='#FFF6F6'" onmouseout="this.style.color='#D5E6EA'">Field Visits</a></li>
+          <li><a href="{% url 'gallery:index' %}"        class="text-sm transition-colors" style="color:#D5E6EA;" onmouseover="this.style.color='#FFF6F6'" onmouseout="this.style.color='#D5E6EA'">Photo Gallery</a></li>
+          <li><a href="{% url 'analytics:dashboard' %}" class="text-sm transition-colors" style="color:#D5E6EA;" onmouseover="this.style.color='#FFF6F6'" onmouseout="this.style.color='#D5E6EA'">Analytics</a></li>
+          <li><a href="{% url 'team:index' %}"          class="text-sm transition-colors" style="color:#D5E6EA;" onmouseover="this.style.color='#FFF6F6'" onmouseout="this.style.color='#D5E6EA'">Our Team</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="text-xs font-semibold uppercase tracking-widest mb-5" style="color:#8CC7C4;font-family:'Space Grotesk',sans-serif;">Villages</h4>
+        <ul class="space-y-2.5">
+          <li><a href="{% url 'villages:detail' 'maharajupeta' %}" class="text-sm transition-colors" style="color:#D5E6EA;" onmouseover="this.style.color='#FFF6F6'" onmouseout="this.style.color='#D5E6EA'">Maharajupeta</a></li>
+          <li><a href="{% url 'villages:detail' 'rajapulova' %}"   class="text-sm transition-colors" style="color:#D5E6EA;" onmouseover="this.style.color='#FFF6F6'" onmouseout="this.style.color='#D5E6EA'">Rajapulova</a></li>
+          <li><a href="{% url 'villages:detail' 'jonnada' %}"      class="text-sm transition-colors" style="color:#D5E6EA;" onmouseover="this.style.color='#FFF6F6'" onmouseout="this.style.color='#D5E6EA'">Jonnada</a></li>
+          <li><a href="{% url 'villages:detail' 'akulapeta' %}"    class="text-sm transition-colors" style="color:#D5E6EA;" onmouseover="this.style.color='#FFF6F6'" onmouseout="this.style.color='#D5E6EA'">Akulapeta</a></li>
+        </ul>
+        <div class="mt-6">
+          <a href="{% url 'surveys:form' %}"
+             class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition-all"
+             style="background:#C41717;"
+             onmouseover="this.style.background='#A21010'"
+             onmouseout="this.style.background='#C41717'">
+            Take the Survey →
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4" style="border-top:1px solid rgba(255,246,246,0.12);">
+      <p class="text-xs" style="color:#D5E6EA;">
+        © {{ site_settings.academic_year|default:"2025–2026" }} Community Service Project · Academic research for community impact
+      </p>
+      <div class="flex items-center gap-5">
+        <a href="{% url 'surveys:table' %}" class="text-xs transition-colors" style="color:#D5E6EA;" onmouseover="this.style.color='#8CC7C4'" onmouseout="this.style.color='#D5E6EA'">Survey Data</a>
+        <a href="{% url 'reports:index' %}" class="text-xs transition-colors" style="color:#D5E6EA;" onmouseover="this.style.color='#8CC7C4'" onmouseout="this.style.color='#D5E6EA'">Reports</a>
+        <a href="{% url 'ai:chat' %}"       class="text-xs transition-colors" style="color:#D5E6EA;" onmouseover="this.style.color='#8CC7C4'" onmouseout="this.style.color='#D5E6EA'">AI Chat</a>
+        <a href="/admin/"                   class="text-xs transition-colors" style="color:#D5E6EA;" onmouseover="this.style.color='#8CC7C4'" onmouseout="this.style.color='#D5E6EA'">Admin</a>
+      </div>
+    </div>
+  </div>
+</footer>
